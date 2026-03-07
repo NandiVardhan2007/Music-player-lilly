@@ -1,0 +1,19 @@
+# Bloomee 🌸 — Python Replica Requirements
+
+# ── Required ──────────────────────────────────────────────────────────────────
+PyQt6>=6.4.0
+# Note: PyQt6 multimedia support may require the platform-specific package:
+#   Windows:  pip install PyQt6
+#   Linux:    sudo apt install python3-pyqt6.qtmultimedia  (or pip install PyQt6)
+
+# ── Online Streaming ──────────────────────────────────────────────────────────
+yt-dlp>=2024.1.0          # YouTube audio stream extraction
+requests>=2.31.0           # HTTP requests for JioSaavn API
+pycryptodome>=3.19.0       # DES decryption for JioSaavn media URLs
+
+# ── Local Library ─────────────────────────────────────────────────────────────
+mutagen>=1.47.0            # Audio metadata (MP3, FLAC, M4A, OGG etc.)
+Pillow>=10.0.0             # Album artwork rendering with rounded corners
+
+# ── Install all at once ───────────────────────────────────────────────────────
+# pip install PyQt6 yt-dlp requests pycryptodome mutagen Pillow
