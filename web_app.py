@@ -38,6 +38,36 @@ from core.metadata import read_metadata, AUDIO_EXTENSIONS
 
 db = Database(DB_PATH)
 
+# ── Keep-alive (prevents Render free tier spin-down) ─────────────────────────
+import threading, time, urllib.request
+
+def _self_ping():
+    """Ping ourselves every 10 minutes so Render doesn't spin us down."""
+    time.sleep(60)  # Wait 1 min after startup before first ping
+    url = os.getenv("RENDER_EXTERNAL_URL", "")
+    if not url:
+        # Try to detect from environment
+        svc = os.getenv("RENDER_SERVICE_NAME", "")
+        if svc:
+            url = f"https://{svc}.onrender.com"
+    if not url:
+        print("[KeepAlive] No URL found, skipping pings")
+        return
+    ping_url = url.rstrip("/") + "/api/ping"
+    print(f"[KeepAlive] Will ping {ping_url} every 10 minutes")
+    while True:
+        try:
+            urllib.request.urlopen(ping_url, timeout=10)
+            print(f"[KeepAlive] Pinged OK at {time.strftime('%H:%M:%S')}")
+        except Exception as e:
+            print(f"[KeepAlive] Ping failed: {e}")
+        time.sleep(600)  # 10 minutes
+
+_ping_thread = threading.Thread(target=_self_ping, daemon=True)
+_ping_thread.start()
+
+
+
 # ── Simple in-memory stream URL cache (avoids repeat API calls) ──────────────
 _stream_cache: dict = {}   # source_id -> url
 
@@ -294,6 +324,13 @@ def new_releases():
                 _stream_cache[t.source_id] = t.stream_url
         return [t.to_dict() for t in tracks]
     except: return []
+
+# ── Ping / Health ────────────────────────────────────────────────────────────
+import datetime
+
+@app.get("/api/ping")
+def ping():
+    return {"status": "alive", "time": datetime.datetime.utcnow().isoformat(), "service": "Lily Music"}
 
 # ── SPA ──────────────────────────────────────────────────────────────────────
 

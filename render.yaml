@@ -5,6 +5,7 @@ services:
     plan: free
     buildCommand: pip install -r requirements-web.txt
     startCommand: uvicorn web_app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/ping
     envVars:
       - key: UPLOAD_DIR
         value: /tmp/lily_uploads
@@ -12,4 +13,5 @@ services:
         value: /tmp/lily_music/lily.db
       - key: PYTHON_VERSION
         value: 3.11.0
-    healthCheckPath: /api/tracks
+      - key: RENDER_EXTERNAL_URL
+        value: https://music-player-lilly.onrender.com
