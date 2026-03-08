@@ -1,88 +1,19 @@
-# =========================
-# OS Files
-# =========================
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# =========================
-# Logs
-# =========================
-*.log
-logs/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# =========================
-# Environment files
-# =========================
-.env
-.env.*
-*.local
-
-# =========================
-# Dependency folders
-# =========================
-node_modules/
-venv/
-env/
-.venv/
-
-# =========================
-# Python
-# =========================
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.sqlite3
-
-# =========================
-# Java
-# =========================
-*.class
-*.jar
-*.war
-*.ear
-target/
-build/
-out/
-
-# =========================
-# IDE / Editors
-# =========================
-.vscode/
-.idea/
-*.iml
-*.ipr
-*.iws
-
-# =========================
-# Temporary files
-# =========================
-*.tmp
-*.temp
-*.swp
-*~
-
-# =========================
-# Coverage / Testing
-# =========================
-coverage/
-.nyc_output/
-*.coverage
-
-# =========================
-# Build outputs
-# =========================
+.Python
+.env
+.venv
+venv/
+env/
+*.egg-info/
 dist/
-release/
-debug/
-
-# =========================
-# Misc
-# =========================
-.cache/
-*.bak
-*.old
+build/
+.DS_Store
+*.db
+*.sqlite
+/uploads/
+/tmp/
+.idea/
+.vscode/

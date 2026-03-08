@@ -6,7 +6,7 @@ from typing import List, Optional
 from core.models import Track, Playlist
 
 
-DB_PATH = Path.home() / ".bloomee" / "bloomee.db"
+DB_PATH = Path(os.getenv("DB_PATH", str(Path.home() / ".lily" / "lily.db")))
 
 
 class Database:
@@ -92,7 +92,7 @@ class Database:
         valid = {"title", "artist", "album", "duration", "play_count", "added_at"}
         if sort not in valid:
             sort = "artist"
-        q = f"SELECT * FROM tracks WHERE source='local'"
+        q = "SELECT * FROM tracks WHERE source='local'"
         params = []
         if search:
             q += " AND (title LIKE ? OR artist LIKE ? OR album LIKE ?)"

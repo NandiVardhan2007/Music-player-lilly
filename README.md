@@ -1,126 +1,93 @@
-# 🌸 Bloomee — Python/PyQt6 Full Replica
+# 🌸 Lily Music Player — Web Edition
 
-A feature-complete Python replica of the Bloomee music player, with live song streaming from **JioSaavn** and **YouTube**, local library management, playlists, and a polished dark UI.
+A full-featured music player web app converted from the PyQt6 desktop app.
+Streams local files, JioSaavn, and YouTube audio directly in the browser.
+
+## Features
+- 🎵 Upload & play local music (MP3, FLAC, OGG, M4A, WAV, OPUS)
+- 🌐 Stream from JioSaavn & YouTube
+- 📝 Synced lyrics via lrclib.net
+- 🗂 Playlists, queue, library management
+- 🎨 Beautiful dark UI with animated lyrics
+- 📦 SQLite database, no external DB needed
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Deploy on Render
+
+### 1. Push your project to GitHub
+Make sure the repo contains:
+```
+web_app.py
+render.yaml
+requirements-web.txt
+Procfile
+static/index.html
+core/
+services/
+```
+
+### 2. Create a new Web Service on render.com
+- Connect your GitHub repo
+- Render auto-detects `render.yaml` — just click **Deploy**
+
+### 3. Environment Variables (auto-set by render.yaml)
+| Variable | Value |
+|----------|-------|
+| `UPLOAD_DIR` | `/tmp/lily_uploads` |
+| `DB_PATH` | `/tmp/lily_music/lily.db` |
+
+> ⚠️ **Note**: Render free tier has an ephemeral filesystem.
+> Uploaded files and the database are lost on restart.
+> For persistence, add a [Render Disk](https://render.com/docs/disks)
+> and set `UPLOAD_DIR` / `DB_PATH` to the disk mount path.
+
+---
+
+## 🖥 Run Locally
 
 ```bash
-# 1. Install dependencies
-pip install PyQt6 yt-dlp requests pycryptodome mutagen Pillow
+# Install dependencies
+pip install -r requirements-web.txt
 
-# 2. Run
-python main.py
+# Start the server
+uvicorn web_app:app --host 0.0.0.0 --port 8000 --reload
+
+# Open browser
+open http://localhost:8000
 ```
 
 ---
 
-## ✨ Features
-
-| Feature | Description |
-|---|---|
-| 🎵 **JioSaavn Streaming** | Search & stream millions of songs via JioSaavn's unofficial API |
-| ▶ **YouTube Streaming** | Search and stream audio from YouTube via yt-dlp |
-| 📚 **Local Library** | Add local MP3/FLAC/OGG/M4A/WAV files with full metadata |
-| 🗂️ **Playlists** | Create, rename, delete playlists; add any track from any source |
-| 🏠 **Home Page** | Live trending charts and new releases from JioSaavn |
-| 🔍 **Search** | Simultaneous search across JioSaavn + YouTube |
-| 🎨 **Album Artwork** | Embedded artwork (local) and thumbnail images (streaming) |
-| 🔀 **Shuffle & Repeat** | Full playback mode controls |
-| ≡ **Queue** | View and manage the current play queue |
-| 📖 **History** | Listening history stored in SQLite |
-| 📂 **Drag & Drop** | Drop audio files or folders directly onto the window |
-| ⌨️ **Keyboard Shortcuts** | Space, Ctrl+←/→, Ctrl+F, Ctrl+L |
-
----
-
-## 📁 Project Structure
-
+## 📁 File Structure
 ```
-bloomee/
-├── main.py                  ← Entry point
-├── requirements.txt
-├── core/
-│   ├── database.py          ← SQLite persistence (tracks, playlists, history)
-│   ├── models.py            ← Track and Playlist data classes
-│   ├── metadata.py          ← Local audio file metadata reader (mutagen)
-│   └── player.py            ← PyQt6 QMediaPlayer wrapper (local + streaming)
-├── services/
-│   ├── saavn.py             ← JioSaavn unofficial API (search, charts, stream URLs)
-│   └── youtube.py           ← YouTube streaming via yt-dlp
-└── ui/
-    ├── styles.py            ← Global dark theme stylesheet
-    ├── widgets.py           ← Shared reusable widgets (ArtworkLabel, TrackCard, etc.)
-    ├── player_bar.py        ← Bottom playback controls
-    ├── sidebar.py           ← Left navigation sidebar
-    ├── track_table.py       ← Reusable track list table
-    ├── main_window.py       ← Root window, wires everything together
-    └── pages/
-        ├── home_page.py     ← Live trending + new releases
-        ├── search_page.py   ← JioSaavn + YouTube search
-        ├── library_page.py  ← Local music library
-        ├── playlist_page.py ← Playlist tracks view
-        └── queue_page.py    ← Current play queue
+web_app.py          ← FastAPI backend (all API routes)
+static/index.html   ← React SPA (the full UI)
+core/
+  database.py       ← SQLite persistence layer
+  models.py         ← Track / Playlist data models
+  metadata.py       ← Audio file metadata reader
+  player.py         ← (desktop only, not used in web)
+services/
+  saavn.py          ← JioSaavn streaming service
+  youtube.py        ← YouTube streaming via yt-dlp
+  lyrics.py         ← Synced lyrics via lrclib.net
+requirements-web.txt
+Procfile
+render.yaml
 ```
 
----
-
-## 🎛️ How Online Streaming Works
-
-### JioSaavn
-1. Search via JioSaavn's public API (`jiosaavn.com/api.php`)
-2. Results include an `encrypted_media_url` field
-3. The URL is DES-encrypted with key `"38346591"` (ECB mode)
-4. After decryption, the URL is upgraded to 320kbps quality
-5. PyQt6 QMediaPlayer streams the direct audio URL
-
-### YouTube
-1. Search via `yt-dlp` (`ytsearch15:query`)
-2. Filter results to audio-only formats
-3. `yt-dlp` extracts the direct audio stream URL
-4. PyQt6 QMediaPlayer streams it directly
-
----
-
-## ⌨️ Keyboard Shortcuts
-
-| Key | Action |
-|---|---|
-| `Space` | Play / Pause |
-| `Ctrl + →` | Next track |
-| `Ctrl + ←` | Previous track |
-| `Ctrl + F` | Focus search |
-| `Ctrl + L` | Go to Library |
-
----
-
-## 🔧 Troubleshooting
-
-**No audio plays:**
-- Make sure PyQt6 multimedia is available: `pip install PyQt6`
-- On Linux, install: `sudo apt install python3-pyqt6.qtmultimedia libqt6multimedia6`
-
-**JioSaavn streams fail:**
-- Ensure `pycryptodome` is installed: `pip install pycryptodome`
-- Note: Some songs may be region-restricted
-
-**YouTube streams fail:**
-- Update yt-dlp: `pip install -U yt-dlp`
-- YouTube changes their API frequently; yt-dlp handles this automatically
-
-**Album art not showing:**
-- Install Pillow: `pip install Pillow`
-
----
-
-## 📦 Dependencies
-
-| Package | Purpose |
-|---|---|
-| `PyQt6` | UI framework + audio playback |
-| `yt-dlp` | YouTube stream URL extraction |
-| `requests` | HTTP calls to JioSaavn API |
-| `pycryptodome` | DES decryption for JioSaavn media URLs |
-| `mutagen` | Audio file metadata reading |
-| `Pillow` | Album art image processing |
+## API Reference
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/tracks` | List library tracks |
+| POST | `/api/tracks/upload` | Upload audio files |
+| GET | `/api/stream/{id}` | Stream a local track |
+| GET | `/api/artwork/{id}` | Get embedded artwork |
+| GET/POST | `/api/playlists` | List / create playlists |
+| GET | `/api/search/saavn?q=` | Search JioSaavn |
+| GET | `/api/search/youtube?q=` | Search YouTube |
+| GET | `/api/resolve/saavn/{id}` | Get Saavn stream URL |
+| GET | `/api/resolve/youtube/{id}` | Get YouTube stream URL |
+| GET | `/api/lyrics?title=&artist=` | Fetch lyrics |
+| GET | `/api/charts` | JioSaavn trending |

@@ -1,0 +1,21 @@
+# Lily Music Player — Web Requirements
+
+# ── Core Web Framework ────────────────────────────────────────────────────────
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+python-multipart>=0.0.9     # required for file uploads
+
+# ── HTTP / Networking ─────────────────────────────────────────────────────────
+requests>=2.31.0
+httpx>=0.27.0
+
+# ── Audio Metadata ────────────────────────────────────────────────────────────
+mutagen>=1.47.0
+Pillow>=10.0.0
+
+# ── Online Streaming ──────────────────────────────────────────────────────────
+yt-dlp>=2024.1.0
+pycryptodome>=3.20.0        # DES decryption for JioSaavn URLs
+
+# ── Install all ───────────────────────────────────────────────────────────────
+# pip install -r requirements-web.txt

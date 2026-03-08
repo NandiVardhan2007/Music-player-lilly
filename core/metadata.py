@@ -43,7 +43,6 @@ def read_metadata(filepath: str) -> Track:
             track.album  = _vorbis(tags, "album")  or track.album
             track.year   = _vorbis(tags, "date")   or _vorbis(tags, "year") or ""
             track.genre  = _vorbis(tags, "genre")  or ""
-            # FLAC pictures
             try:
                 pics = audio.pictures
                 if pics:
@@ -83,7 +82,8 @@ def _m4a(tags, key: str) -> Optional[str]:
 
 def scan_directory(directory: str):
     """Yield audio file paths in a directory recursively."""
-    for root, _, files in __import__("os").walk(directory):
+    import os
+    for root, _, files in os.walk(directory):
         for f in files:
             if Path(f).suffix.lower() in AUDIO_EXTENSIONS:
-                yield __import__("os").path.join(root, f)
+                yield os.path.join(root, f)

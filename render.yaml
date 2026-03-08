@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: lily-music
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements-web.txt
+    startCommand: uvicorn web_app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: UPLOAD_DIR
+        value: /tmp/lily_uploads
+      - key: DB_PATH
+        value: /tmp/lily_music/lily.db
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    healthCheckPath: /api/tracks

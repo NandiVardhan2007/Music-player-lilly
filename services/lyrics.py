@@ -1,35 +1,24 @@
 """
-Live lyrics service using lrclib.net — the same API Bloomee uses.
-
-Bloomee uses two endpoints:
-  GET  https://lrclib.net/api/get?track_name=...&artist_name=...&album_name=...&duration=...
-  GET  https://lrclib.net/api/search?q=...&track_name=...&artist_name=...
-
-Both return JSON with fields: syncedLyrics (LRC format), plainLyrics, trackName,
-artistName, albumName, duration, id.
+Live lyrics service using lrclib.net
 """
 
 import re
-import threading
 import requests
 from typing import Optional, List
 from dataclasses import dataclass, field
 
 LRCLIB_BASE = "https://lrclib.net/api"
 HEADERS = {
-    "User-Agent": "LilyMusic/1.0 (https://github.com/lily-music)",
+    "User-Agent": "LilyMusic/2.0 (https://github.com/lily-music)",
     "Accept": "application/json",
 }
 TIMEOUT = 8
 
 
-# ── Data classes ──────────────────────────────────────────────────────────────
-
 @dataclass
 class LyricLine:
-    """A single timestamped lyric line (from LRC format)."""
-    time_ms: int       # position in milliseconds
-    text: str          # lyric text; empty string = instrumental break
+    time_ms: int
+    text: str
 
     @property
     def time_sec(self) -> float:
@@ -59,14 +48,10 @@ class Lyrics:
         return self.has_synced or self.has_plain
 
 
-# ── LRC parser ────────────────────────────────────────────────────────────────
-
-# Matches lines like [02:34.55] Some lyric here
 _LRC_RE = re.compile(r'\[(\d{1,3}):(\d{2})\.(\d{2,3})\](.*)')
 
 
 def parse_lrc(lrc_text: str) -> List[LyricLine]:
-    """Parse LRC format string into sorted LyricLine list."""
     if not lrc_text:
         return []
     lines: List[LyricLine] = []
@@ -77,7 +62,6 @@ def parse_lrc(lrc_text: str) -> List[LyricLine]:
         mins   = int(m.group(1))
         secs   = int(m.group(2))
         frac   = m.group(3)
-        # centiseconds or milliseconds depending on digit count
         ms_frac = int(frac) * (10 if len(frac) == 2 else 1)
         text   = m.group(4).strip()
         time_ms = (mins * 60 + secs) * 1000 + ms_frac
@@ -87,11 +71,6 @@ def parse_lrc(lrc_text: str) -> List[LyricLine]:
 
 
 def find_current_line(lines: List[LyricLine], position_ms: int) -> int:
-    """
-    Binary search for the active lyric line at position_ms.
-    Returns the index of the last line whose time_ms <= position_ms,
-    or -1 if before the first line. Mirrors Bloomee's _findCurrentLyricIndex.
-    """
     if not lines:
         return -1
     lo, hi, result = 0, len(lines) - 1, -1
@@ -105,8 +84,6 @@ def find_current_line(lines: List[LyricLine], position_ms: int) -> int:
     return result
 
 
-# ── Network helpers ───────────────────────────────────────────────────────────
-
 def _build_lyrics(data: dict) -> Lyrics:
     return Lyrics(
         track_name  = data.get("trackName")   or "",
@@ -115,20 +92,13 @@ def _build_lyrics(data: dict) -> Lyrics:
         duration    = float(data.get("duration") or 0),
         synced      = parse_lrc(data.get("syncedLyrics") or ""),
         plain       = data.get("plainLyrics") or "",
-        source_id   = int(data.get("id")      or 0),
+        source_id   = int(data.get("id") or 0),
     )
 
 
 def _get_exact(title: str, artist: str,
                album: str = "", duration: float = 0) -> Optional[Lyrics]:
-    """
-    lrclib.net /api/get — exact metadata lookup.
-    Mirrors Bloomee's "LRCLibNet by Title/GET".
-    """
-    params: dict = {
-        "track_name":  title,
-        "artist_name": artist,
-    }
+    params: dict = {"track_name": title, "artist_name": artist}
     if album:
         params["album_name"] = album
     if duration > 1:
@@ -139,7 +109,6 @@ def _get_exact(title: str, artist: str,
         if r.status_code == 200:
             data = r.json()
             if data and isinstance(data, dict) and (data.get("syncedLyrics") or data.get("plainLyrics")):
-                print(f"[Lyrics] LRCLibNet by Title/GET: {title} – {artist}")
                 return _build_lyrics(data)
     except Exception as e:
         print(f"[Lyrics] GET error: {e}")
@@ -147,10 +116,6 @@ def _get_exact(title: str, artist: str,
 
 
 def _search(query: str, title: str = "", artist: str = "") -> list:
-    """
-    lrclib.net /api/search — text search.
-    Mirrors Bloomee's "LRCLibNet by Search".
-    """
     params: dict = {"q": query}
     if title:
         params["track_name"] = title
@@ -167,9 +132,6 @@ def _search(query: str, title: str = "", artist: str = "") -> list:
     return []
 
 
-# ── Public API ────────────────────────────────────────────────────────────────
-
-# Simple title cleanup — remove feat., (Official), [Lyric Video] etc.
 _CLEAN_RE = re.compile(
     r'\((?:feat|ft|official|lyric|video|audio|hd|4k|live|remix)[^)]*\)'
     r'|\[(?:feat|ft|official|lyric|video|audio|hd|4k|live|remix)[^\]]*\]'
@@ -184,52 +146,36 @@ def _clean(s: str) -> str:
 
 def get_lyrics(title: str, artist: str = "",
                album: str = "", duration: float = 0) -> Optional[Lyrics]:
-    """
-    Main lyrics fetching function. Priority order (same as Bloomee):
-    1. Exact GET with full metadata
-    2. Search with cleaned title + artist
-    3. Search with title only (Bloomee's "LRCLibNet by Search Single")
-    """
     clean_title  = _clean(title)
-    # Use only primary artist (before comma/ampersand/feat)
     clean_artist = re.split(r',|&|feat\.|ft\.', artist, maxsplit=1, flags=re.I)[0].strip()
 
-    # 1. Exact lookup
     if clean_title and clean_artist:
         result = _get_exact(clean_title, clean_artist, album, duration)
         if result:
             return result
 
-    # 2. Search with artist
     if clean_title and clean_artist:
         results = _search(f"{clean_title} {clean_artist}",
                           title=clean_title, artist=clean_artist)
         best = _pick_best(results)
         if best:
-            print(f"[Lyrics] LRCLibNet by Search: {title} – {artist}")
             return best
 
-    # 3. Search title-only fallback
     if clean_title:
         results = _search(clean_title, title=clean_title)
         best = _pick_best(results)
         if best:
-            print(f"[Lyrics] LRCLibNet by Search Single: {title}")
             return best
 
-    print(f"[Lyrics] Failed to get lyrics for: {title}")
     return None
 
 
 def _pick_best(results: list) -> Optional[Lyrics]:
-    """From a list of lrclib results, prefer synced over plain."""
     if not results:
         return None
-    # Prefer synced
     for item in results:
         if item.get("syncedLyrics"):
             return _build_lyrics(item)
-    # Fall back to plain
     for item in results:
         if item.get("plainLyrics"):
             return _build_lyrics(item)
