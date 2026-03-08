@@ -1114,7 +1114,7 @@ function App(){
   },[]);
 
   const toast=useCallback((msg,type='success')=>{const id=Date.now();setToasts(t=>[...t,{id,msg,type}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3500)},[]);
-  const refreshKeys=useCallback(()=>IDB.allKeys().then(k=>setOfflineKeys(k)).catch(()={}),[]);
+  const refreshKeys=useCallback(()=>IDB.allKeys().then(k=>setOfflineKeys(k)).catch(()=>{}),[]);
   const loadPlaylists=useCallback(()=>api.get('/api/playlists').then(setPlaylists).catch(()=>{}),[]);
 
   const addRecent=useCallback(track=>{
