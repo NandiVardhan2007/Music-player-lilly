@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Lily Music"/>
 <meta name="theme-color" content="#000000"/>
 <link rel="manifest" href="/static/manifest.json"/>
-<title>Lily Music</title>
+<title>Lily Music 🌸</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -17,255 +17,387 @@
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
+/* ── TOKENS ── */
 :root{
-  --bg:#121212;--bg2:#181818;--bg3:#232323;--hover:#2a2a2a;--sel:#333;
-  --green:#1DB954;--green2:#1ed760;--green-glow:rgba(29,185,84,.25);
-  --white:#fff;--muted:#b3b3b3;--dim:#6a6a6a;--black:#000;
-  --red:#e91429;--sidebar-w:240px;--player-h:90px;--bnav-h:56px;
-  --safe-b:env(safe-area-inset-bottom,0px);--radius:4px;
+  --bg:#121212;--bg2:#181818;--bg3:#242424;--bg4:#2a2a2a;
+  --hover:#2a2a2a;--sel:#333;--border:#2a2a2a;
+  --green:#1DB954;--green2:#1ed760;--green-dim:rgba(29,185,84,.15);
+  --white:#fff;--t1:#fff;--t2:#b3b3b3;--dim:#6a6a6a;--black:#000;
+  --red:#e91429;
+  --player-h:90px;--bnav-h:60px;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --safe-l:env(safe-area-inset-left,0px);
+  --safe-r:env(safe-area-inset-right,0px);
 }
+
+/* ── RESET ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body,#root{height:100%;overflow:hidden}
-body{font-family:'Figtree',sans-serif;background:var(--black);color:var(--white);font-size:14px;overscroll-behavior:none}
-::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#535353;border-radius:3px}::-webkit-scrollbar-thumb:hover{background:#7a7a7a}
+html{height:100%;overflow:hidden}
+body{height:100%;overflow:hidden;font-family:'Figtree',sans-serif;background:var(--black);color:var(--t1);font-size:14px;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+#root{height:100%;display:flex;flex-direction:column;overflow:hidden}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#535353;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#7a7a7a}
 
-.app{display:grid;grid-template-rows:1fr var(--player-h);grid-template-columns:var(--sidebar-w) 1fr;height:100svh;height:100vh;background:var(--black);overflow:hidden}
-.sidebar-wrap{grid-row:1;grid-column:1;background:var(--black);display:flex;flex-direction:column;overflow:hidden;padding:8px;gap:2px}
-.main-wrap{grid-row:1;grid-column:2;background:var(--bg);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;margin:8px 8px 8px 0}
-.player-wrap{grid-row:2;grid-column:1/3;background:#181818;border-top:1px solid #2a2a2a}
+/* ── DESKTOP LAYOUT ── */
+.app{display:flex;flex-direction:column;height:100%;overflow:hidden}
+.app-body{display:flex;flex:1;overflow:hidden;min-height:0}
+.app-player{flex-shrink:0;height:var(--player-h);background:#181818;border-top:1px solid #282828}
 
-.sidebar-nav{background:var(--bg2);border-radius:8px;padding:6px 0;flex-shrink:0}
-.sidebar-lib{background:var(--bg2);border-radius:8px;flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
-.logo{display:flex;align-items:center;gap:10px;padding:18px 20px 14px;font-size:16px;font-weight:900;letter-spacing:-.3px;color:var(--white)}
-.nav-link{display:flex;align-items:center;gap:16px;padding:10px 20px;border:none;background:transparent;color:var(--muted);font-family:'Figtree',sans-serif;font-size:13px;font-weight:700;cursor:pointer;width:100%;text-align:left;transition:color .15s;letter-spacing:.3px}
-.nav-link:hover{color:var(--white)}.nav-link.active{color:var(--white)}
-.nav-icon{width:24px;height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
-.lib-header{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px;flex-shrink:0}
-.lib-label{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.5px;display:flex;align-items:center;gap:8px}
-.lib-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .15s}
-.lib-btn:hover{color:var(--white);background:var(--hover)}
-.playlist-list{flex:1;overflow-y:auto;padding:0 8px 8px}
-.pl-item{display:flex;align-items:center;gap:12px;padding:8px;border-radius:4px;cursor:pointer;transition:background .12s}
-.pl-item:hover{background:var(--hover)}.pl-item.active{background:var(--sel)}
-.pl-icon{width:40px;height:40px;border-radius:4px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:var(--muted);overflow:hidden}
-.pl-info{min-width:0}.pl-name{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pl-meta{font-size:11px;color:var(--muted);margin-top:2px}
-.sidebar-add-btns{padding:8px;display:flex;gap:4px}
-.sidebar-add-btn{flex:1;background:transparent;border:1px dashed #3a3a3a;border-radius:4px;color:var(--dim);font-family:'Figtree',sans-serif;font-size:11px;font-weight:700;letter-spacing:.5px;padding:8px;cursor:pointer;transition:all .15s;text-align:center}
-.sidebar-add-btn:hover{color:var(--white);border-color:var(--muted);background:var(--hover)}
+/* ── SIDEBAR ── */
+.sidebar{width:240px;min-width:240px;background:var(--black);padding:8px;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.sidebar-top{background:var(--bg2);border-radius:8px;flex-shrink:0}
+.sidebar-lib{background:var(--bg2);border-radius:8px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.s-logo{display:flex;align-items:center;gap:10px;padding:16px 20px 12px;font-size:15px;font-weight:900;letter-spacing:-.3px;color:var(--t1);border-bottom:1px solid transparent}
+.s-logo .logo-icon{width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.s-nav-btn{display:flex;align-items:center;gap:14px;padding:9px 20px;border:none;background:transparent;color:var(--t2);font-family:'Figtree',sans-serif;font-size:13px;font-weight:700;cursor:pointer;width:100%;text-align:left;transition:color .15s;letter-spacing:.2px}
+.s-nav-btn .ico{font-size:20px;width:24px;text-align:center;flex-shrink:0}
+.s-nav-btn:hover{color:var(--t1)}.s-nav-btn.act{color:var(--t1)}
+.lib-hd{display:flex;align-items:center;padding:14px 16px 6px;gap:8px;flex-shrink:0}
+.lib-hd-label{flex:1;font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+.lib-add-btn{background:transparent;border:none;color:var(--t2);cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .15s}
+.lib-add-btn:hover{color:var(--t1);background:var(--hover)}
+.lib-list{flex:1;overflow-y:auto;padding:4px 8px 8px}
+.lib-item{display:flex;align-items:center;gap:12px;padding:7px 8px;border-radius:4px;cursor:pointer;transition:background .12s}
+.lib-item:hover{background:var(--hover)}.lib-item.act{background:var(--sel)}
+.lib-icon{width:40px;height:40px;border-radius:4px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:18px;background:var(--bg3);color:var(--t2)}
+.lib-icon img{width:100%;height:100%;object-fit:cover;display:block}
+.lib-item-info{min-width:0}
+.lib-item-name{font-size:13px;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-item-meta{font-size:11px;color:var(--t2);margin-top:2px}
+.sidebar-btns{padding:8px;display:flex;gap:4px;flex-shrink:0}
+.s-add-btn{flex:1;background:transparent;border:1px dashed #3a3a3a;border-radius:4px;color:var(--dim);font-family:'Figtree',sans-serif;font-size:11px;font-weight:700;letter-spacing:.3px;padding:7px;cursor:pointer;transition:all .15s;text-align:center}
+.s-add-btn:hover{color:var(--t1);border-color:#727272;background:var(--hover)}
 
-.topbar{display:flex;align-items:center;padding:16px 24px 0;gap:16px;flex-shrink:0}
-.topbar-nav-btn{background:#2a2a2a;border:none;color:var(--white);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:background .15s}
-.topbar-nav-btn:hover{background:#3a3a3a}
-.folder-btn{display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:20px;background:transparent;border:1px solid #727272;color:var(--white);font-family:'Figtree',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.3px}
-.folder-btn:hover{border-color:var(--white)}.folder-btn.set{border-color:var(--green);color:var(--green)}
-.offline-badge{padding:4px 12px;border-radius:12px;background:var(--red);color:var(--white);font-size:11px;font-weight:700;letter-spacing:.5px}
+/* ── MAIN AREA ── */
+.main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);border-radius:8px;margin:8px 8px 8px 0}
+.topbar{display:flex;align-items:center;gap:10px;padding:14px 20px 0;flex-shrink:0}
+.topbar-nav{display:flex;gap:4px}
+.t-nav-btn{width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:none;color:var(--t1);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.t-nav-btn:hover{background:#3a3a3a}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.offline-pill{padding:4px 10px;border-radius:20px;background:var(--red);color:#fff;font-size:10px;font-weight:800;letter-spacing:.8px}
+.folder-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;background:transparent;border:1px solid #555;color:var(--t1);font-family:'Figtree',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.folder-btn:hover{border-color:#fff}.folder-btn.set{border-color:var(--green);color:var(--green)}
 
-.page{flex:1;overflow-y:auto;padding:0 24px 24px;-webkit-overflow-scrolling:touch}
-.page-fade{animation:fade-in .3s ease}
-@keyframes fade-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* ── PAGES ── */
+.page{flex:1;min-height:0;overflow-y:auto;padding:20px 24px 32px;-webkit-overflow-scrolling:touch}
+.page-fade{animation:pfade .25s ease}
+@keyframes pfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-.hero-bg{height:240px;min-height:240px;display:flex;align-items:flex-end;padding:24px;margin:0 -24px 24px;position:relative;overflow:hidden;flex-shrink:0}
+/* Home hero */
+.hero{min-height:200px;display:flex;align-items:flex-end;padding:24px;margin:0 -24px 24px;position:relative;overflow:hidden;flex-shrink:0}
+.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(18,18,18,.8) 0%,transparent 60%)}
 .hero-content{position:relative;z-index:1}
-.hero-greeting{font-size:32px;font-weight:900;letter-spacing:-1px}
-.hero-sub{font-size:13px;color:rgba(255,255,255,.7);margin-top:4px;font-weight:500}
+.hero-greeting{font-size:30px;font-weight:900;letter-spacing:-1px}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.65);margin-top:3px}
+.section-h{font-size:20px;font-weight:900;letter-spacing:-.5px;margin-bottom:14px;margin-top:4px;display:flex;align-items:center;justify-content:space-between}
+.section-h a{font-size:12px;font-weight:700;color:var(--t2);letter-spacing:.5px;cursor:pointer;transition:color .15s}
+.section-h a:hover{color:var(--t1)}
 
-.section-title{font-size:22px;font-weight:900;color:var(--white);margin-bottom:16px;margin-top:8px;letter-spacing:-.5px}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:32px}
-.track-card{background:var(--bg2);border-radius:8px;padding:16px;cursor:pointer;transition:background .2s;position:relative}
-.track-card:hover{background:#282828}.track-card:hover .card-play-btn{opacity:1;transform:translateY(0)}
+/* Cards */
+.cards-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;margin-bottom:28px}
+.card{background:var(--bg2);border-radius:8px;padding:14px;cursor:pointer;position:relative;transition:background .2s;overflow:hidden}
+.card:hover{background:#282828}.card:hover .card-play{opacity:1;transform:translateY(0)}
 .card-art{width:100%;aspect-ratio:1;border-radius:4px;object-fit:cover;display:block;background:var(--bg3);margin-bottom:12px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-.card-art-ph{width:100%;aspect-ratio:1;border-radius:4px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:12px;color:var(--dim)}
-.card-title{font-size:13px;font-weight:700;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
-.card-artist{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card-play-btn{position:absolute;bottom:72px;right:16px;width:48px;height:48px;border-radius:50%;background:var(--green);border:none;color:var(--black);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 16px rgba(0,0,0,.4);opacity:0;transform:translateY(8px);transition:all .2s}
-.card-play-btn:hover{transform:translateY(0) scale(1.06)!important;background:var(--green2)}
+.card-art-ph{width:100%;aspect-ratio:1;border-radius:4px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:12px;color:var(--dim)}
+.card-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.card-sub{font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-play{position:absolute;bottom:66px;right:14px;width:46px;height:46px;border-radius:50%;background:var(--green);border:none;color:var(--black);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(8px);transition:all .2s;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.card-play:hover{background:var(--green2);transform:translateY(0) scale(1.05)!important}
 
-.track-row{display:grid;grid-template-columns:40px 1fr 1fr 1fr 70px 36px;padding:4px 16px;border-radius:4px;cursor:pointer;transition:background .1s;align-items:center;gap:12px}
-.track-row:hover{background:var(--hover)}.track-row:hover .tr-actions{opacity:1}
-.track-row.playing{background:rgba(29,185,84,.08)}.track-row.playing .tr-title{color:var(--green)}
-.tr-num{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);text-align:center}
-.tr-playing-icon{display:flex;align-items:flex-end;justify-content:center;gap:2px;height:16px}
-.eq-bar{width:3px;background:var(--green);border-radius:1.5px;animation:eq .6s ease-in-out infinite alternate}
-.eq-bar:nth-child(2){animation-delay:.15s;animation-duration:.5s}.eq-bar:nth-child(3){animation-delay:.05s;animation-duration:.7s}
-@keyframes eq{from{height:4px}to{height:15px}}
-.tr-info{display:flex;align-items:center;gap:12px;min-width:0}
-.tr-art{width:40px;height:40px;border-radius:2px;flex-shrink:0;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--dim)}
-.tr-details{min-width:0}
-.tr-title{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tr-sub{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tr-text{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tr-dur{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-align:right}
-.tr-actions{opacity:0;display:flex;align-items:center;justify-content:center;transition:opacity .15s}
-.tr-dl-badge{font-size:11px;color:var(--green);font-weight:800}
-.track-table-head{display:grid;grid-template-columns:40px 1fr 1fr 1fr 70px 36px;padding:0 16px;border-bottom:1px solid #2a2a2a;margin-bottom:4px;gap:12px}
-.track-table-head span{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0}
+/* Recent strip */
+.recent-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:28px}
+.recent-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border-radius:4px;cursor:pointer;overflow:hidden;transition:background .15s;padding-right:12px}
+.recent-item:hover{background:rgba(255,255,255,.12)}
+.recent-art{width:52px;height:52px;flex-shrink:0;object-fit:cover;display:block;background:var(--bg3);font-size:22px;display:flex;align-items:center;justify-content:center;color:var(--dim)}
+.recent-art img{width:100%;height:100%;object-fit:cover;display:block}
+.recent-title{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.search-bar{display:flex;align-items:center;gap:12px;background:#fff;border-radius:24px;padding:12px 20px;max-width:480px}
-.search-bar input{flex:1;border:none;outline:none;background:transparent;font-family:'Figtree',sans-serif;font-size:14px;font-weight:600;color:#000}
-.search-bar input::placeholder{color:#737373}
-.tabs{display:flex;border-bottom:1px solid #2a2a2a;margin-bottom:20px;flex-shrink:0}
-.tab{padding:12px 20px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border:none;background:transparent;font-family:'Figtree',sans-serif;border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .15s}
-.tab:hover{color:var(--white)}.tab.active{color:var(--white);border-bottom-color:var(--green)}
-.result-row{display:flex;align-items:center;gap:16px;padding:8px 12px;border-radius:4px;cursor:pointer;transition:background .12s}
-.result-row:hover{background:var(--hover)}
-.result-thumb{width:48px;height:48px;border-radius:4px;flex-shrink:0;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--dim)}
-.result-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.result-info{flex:1;min-width:0}
-.r-title{font-size:14px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.r-meta{font-size:12px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.result-dur{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0}
-.source-pill{font-size:9px;font-weight:800;letter-spacing:1px;padding:2px 6px;border-radius:20px;text-transform:uppercase;flex-shrink:0}
-.sp-local{background:rgba(29,185,84,.15);color:var(--green)}.sp-offline{background:rgba(29,185,84,.25);color:var(--green)}
-.sp-saavn{color:#ffb74d;background:rgba(255,183,77,.1)}.sp-yt{color:#f44336;background:rgba(244,67,54,.1)}
+/* Track table */
+.tbl-head{display:grid;padding:0 14px 0 16px;border-bottom:1px solid #282828;margin-bottom:4px}
+.tbl-head-cols{grid-template-columns:36px 1fr 200px 200px 70px 32px}
+.tbl-head span{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:1.5px;text-transform:uppercase;padding:8px 0}
+.tbl-row{display:grid;padding:3px 14px 3px 16px;border-radius:4px;cursor:pointer;align-items:center;gap:12px;transition:background .1s}
+.tbl-row-cols{grid-template-columns:36px 1fr 200px 200px 70px 32px}
+.tbl-row:hover{background:var(--hover)}.tbl-row:hover .row-actions{opacity:1}
+.tbl-row.playing{background:rgba(29,185,84,.07)}.tbl-row.playing .row-title{color:var(--green)}
+.row-num{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--t2);text-align:center;width:36px}
+.eq-ani{display:flex;align-items:flex-end;justify-content:center;gap:2px;height:16px}
+.eq-b{width:3px;background:var(--green);border-radius:2px;animation:eq .6s ease-in-out infinite alternate}
+.eq-b:nth-child(2){animation-delay:.15s;animation-duration:.5s}.eq-b:nth-child(3){animation-delay:.05s;animation-duration:.7s}
+@keyframes eq{from{height:4px}to{height:14px}}
+.row-info{display:flex;align-items:center;gap:10px;min-width:0}
+.row-art{width:40px;height:40px;border-radius:2px;flex-shrink:0;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--dim)}
+.row-art img{width:100%;height:100%;object-fit:cover;display:block}
+.row-meta{min-width:0}
+.row-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-artist-sm{font-size:11px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:none}
+.row-text{font-size:13px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row-dur{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t2);text-align:right}
+.row-actions{opacity:0;display:flex;align-items:center;justify-content:center;transition:opacity .15s}
+.row-act-btn{background:transparent;border:none;color:var(--t2);cursor:pointer;font-size:14px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.row-act-btn:hover{color:var(--t1);background:var(--hover)}.row-act-btn.dl{color:var(--green)!important}
+.pill{font-size:9px;font-weight:800;letter-spacing:.8px;padding:2px 6px;border-radius:20px;text-transform:uppercase;flex-shrink:0}
+.pill-local{background:rgba(29,185,84,.12);color:var(--green)}
+.pill-offline{background:rgba(29,185,84,.2);color:var(--green)}
+.pill-saavn{background:rgba(255,183,77,.1);color:#ffb74d}
+.pill-yt{background:rgba(244,67,54,.1);color:#f44336}
 
-.upload-zone{border:2px dashed #3a3a3a;border-radius:8px;padding:32px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:24px}
-.upload-zone:hover,.upload-zone.drag-over{border-color:var(--green);background:var(--green-glow)}
-.upload-icon{font-size:40px;margin-bottom:12px;opacity:.5}
-.upload-zone p{color:var(--muted);font-size:13px}
-.upload-zone p span{color:var(--green);font-weight:700}
-.upload-zone.uploading{opacity:.5;pointer-events:none}
+/* Search */
+.s-bar-wrap{padding:20px 0 16px;flex-shrink:0}
+.s-bar{display:flex;align-items:center;gap:12px;background:#fff;border-radius:24px;padding:11px 18px;max-width:520px}
+.s-bar input{flex:1;border:none;outline:none;background:transparent;font-family:'Figtree',sans-serif;font-size:14px;font-weight:600;color:#000}
+.s-bar input::placeholder{color:#737373}
+.tabs-row{display:flex;border-bottom:1px solid #282828;margin-bottom:18px;flex-shrink:0}
+.tab-btn{padding:11px 20px;font-size:13px;font-weight:700;color:var(--t2);cursor:pointer;border:none;background:transparent;font-family:'Figtree',sans-serif;border-bottom:3px solid transparent;margin-bottom:-1px;transition:all .15s}
+.tab-btn:hover{color:var(--t1)}.tab-btn.act{color:var(--t1);border-bottom-color:var(--green)}
 
-.pl-header{display:flex;gap:24px;align-items:flex-end;padding:48px 24px 24px;margin:0 -24px 0;min-height:200px}
-.pl-cover{width:180px;height:180px;border-radius:4px;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-size:60px;flex-shrink:0;box-shadow:0 16px 40px rgba(0,0,0,.6)}
-.pl-header-info{min-width:0;padding-bottom:4px}
-.pl-type{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.pl-title{font-size:44px;font-weight:900;letter-spacing:-2px;color:var(--white);line-height:1;margin-bottom:8px}
-.pl-sub{font-size:13px;color:var(--muted)}
-.pl-toolbar{display:flex;align-items:center;gap:16px;padding:24px 0 16px}
-.big-play-btn{width:56px;height:56px;border-radius:50%;background:var(--green);border:none;color:var(--black);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
-.big-play-btn:hover{background:var(--green2);transform:scale(1.05)}
-.shuffle-btn{background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.shuffle-btn:hover{color:var(--white)}.shuffle-btn.active{color:var(--green)}
+/* Upload */
+.upload-zone{border:2px dashed #3a3a3a;border-radius:8px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:20px;flex-shrink:0}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--green);background:var(--green-dim)}
+.upload-zone.busy{opacity:.5;pointer-events:none}
 
-.queue-item{display:flex;align-items:center;gap:14px;padding:8px 12px;border-radius:4px;cursor:pointer;transition:background .12s}
-.queue-item:hover{background:var(--hover)}.queue-item.active{background:rgba(29,185,84,.08)}
-.queue-item.active .qi-title{color:var(--green)}
-.qi-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);width:28px;text-align:right;flex-shrink:0}
-.qi-info{flex:1;min-width:0}
-.qi-title{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.qi-artist{font-size:11px;color:var(--muted);margin-top:1px}
+/* Playlist header */
+.pl-header{display:flex;gap:24px;align-items:flex-end;padding:40px 24px 24px;margin:0 -24px 0;overflow:hidden;position:relative;flex-shrink:0}
+.pl-cover{width:180px;height:180px;border-radius:4px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:60px;flex-shrink:0;box-shadow:0 16px 40px rgba(0,0,0,.6)}
+.pl-h-info{min-width:0;padding-bottom:4px}
+.pl-h-type{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t2);margin-bottom:6px}
+.pl-h-name{font-size:44px;font-weight:900;letter-spacing:-2px;line-height:1;margin-bottom:8px}
+.pl-h-sub{font-size:13px;color:var(--t2)}
+.pl-toolbar{display:flex;align-items:center;gap:14px;padding:20px 0 14px;flex-shrink:0}
+.big-play{width:56px;height:56px;border-radius:50%;background:var(--green);border:none;color:var(--black);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.big-play:hover{background:var(--green2);transform:scale(1.05)}
+.icon-btn{background:transparent;border:none;font-size:24px;cursor:pointer;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--t2)}
+.icon-btn:hover{color:var(--t1)}.icon-btn.act{color:var(--green)}
 
-.lyrics-wrap{max-width:620px;margin:0 auto;text-align:center;padding:24px 0 80px}
-.lyric-line{padding:8px 16px;border-radius:8px;font-size:18px;font-weight:700;color:#3a3a3a;transition:all .25s;cursor:default;line-height:1.5;letter-spacing:-.2px}
-.lyric-line.active{font-size:26px;color:var(--white)}.lyric-line.near{font-size:21px;color:#777}
-.lyric-line.empty-line{height:12px}.lyrics-src{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
+/* Queue */
+.q-item{display:flex;align-items:center;gap:12px;padding:7px 12px;border-radius:4px;cursor:pointer;transition:background .12s}
+.q-item:hover{background:var(--hover)}.q-item.act{background:rgba(29,185,84,.07)}.q-item.act .q-title{color:var(--green)}
+.q-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t2);width:26px;text-align:right;flex-shrink:0}
+.q-info{flex:1;min-width:0}
+.q-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.q-artist{font-size:11px;color:var(--t2);margin-top:1px}
 
-.player-bar{height:var(--player-h);display:flex;align-items:center;padding:0 24px;background:#181818;border-top:1px solid #2a2a2a}
-.now-playing{display:flex;align-items:center;gap:14px;width:30%;min-width:0}
-.np-art{width:56px;height:56px;border-radius:4px;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--dim);overflow:hidden}
-.np-art img{width:100%;height:100%;object-fit:cover;display:block}
+/* Lyrics */
+.lyr-wrap{max-width:600px;margin:0 auto;text-align:center;padding:16px 0 80px}
+.lyr-src{font-size:10px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+.lyr-line{padding:7px 12px;font-size:17px;font-weight:700;color:#2e2e2e;transition:all .22s;line-height:1.55;letter-spacing:-.1px}
+.lyr-line.act{font-size:26px;color:var(--t1)}.lyr-line.near{font-size:20px;color:#777}
+.lyr-line.emp{height:10px}
+
+/* ── DESKTOP PLAYER ── */
+.player-bar{height:var(--player-h);display:flex;align-items:center;padding:0 20px;gap:0}
+.np{display:flex;align-items:center;gap:12px;width:30%;min-width:200px}
+.np-art-wrap{width:56px;height:56px;border-radius:4px;flex-shrink:0;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--dim);cursor:pointer;transition:opacity .15s}
+.np-art-wrap:hover{opacity:.8}
+.np-art-wrap img{width:100%;height:100%;object-fit:cover;display:block}
 .np-info{min-width:0}
-.np-title{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.np-artist{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-.np-like{background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 8px;flex-shrink:0}
-.np-like:hover{color:var(--white)}
-
-.center-ctrl{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 16px}
-.ctrl-row{display:flex;align-items:center;gap:8px}
-.ctrl-btn{background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.ctrl-btn:hover{color:var(--white)}.ctrl-btn.active{color:var(--green)}.ctrl-btn:active{transform:scale(.92)}
-.play-btn{width:32px;height:32px;border-radius:50%;background:var(--white);border:none;color:var(--black);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin:0 8px}
-.play-btn:hover{transform:scale(1.07)}.play-btn:active{transform:scale(.96)}
-.prog-row{display:flex;align-items:center;gap:10px;width:100%;max-width:560px}
-.prog-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);min-width:36px}
-.prog-time.right{text-align:right}
+.np-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.np-title:hover{text-decoration:underline}
+.np-artist{font-size:11px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-heart{background:transparent;border:none;color:var(--t2);font-size:16px;cursor:pointer;padding:0 8px;flex-shrink:0;transition:color .15s}
+.np-heart:hover{color:var(--t1)}
+.ctrl-center{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;padding:0 14px;min-width:0}
+.ctrl-row{display:flex;align-items:center;gap:6px}
+.ctrl-btn{background:transparent;border:none;color:var(--t2);font-size:16px;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.ctrl-btn:hover{color:var(--t1)}.ctrl-btn.act{color:var(--green)}.ctrl-btn:active{transform:scale(.9)}
+.play-btn{width:32px;height:32px;border-radius:50%;background:var(--t1);border:none;color:var(--black);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin:0 6px;flex-shrink:0}
+.play-btn:hover{transform:scale(1.07)}.play-btn:active{transform:scale(.94)}
+.prog-row{display:flex;align-items:center;gap:8px;width:100%;max-width:520px}
+.prog-t{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);min-width:34px;flex-shrink:0}
+.prog-t.r{text-align:right}
 .prog-track{flex:1;height:16px;display:flex;align-items:center;cursor:pointer;position:relative;touch-action:none}
-.prog-bg{width:100%;height:4px;background:#535353;border-radius:2px;position:relative;transition:height .15s}
+.prog-bg{width:100%;height:4px;background:#535353;border-radius:2px;transition:height .15s}
 .prog-track:hover .prog-bg{height:6px}
-.prog-fill{height:100%;background:var(--white);border-radius:2px;transition:background .15s}
+.prog-fill{height:100%;background:var(--t1);border-radius:2px;transition:background .15s;pointer-events:none}
 .prog-track:hover .prog-fill{background:var(--green)}
-.prog-handle{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--white);opacity:0;pointer-events:none}
-.prog-track:hover .prog-handle{opacity:1}
-.right-ctrl{width:30%;display:flex;align-items:center;justify-content:flex-end;gap:8px}
-.vol-wrap{display:flex;align-items:center;gap:8px;flex:1;max-width:160px}
+.prog-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--t1);opacity:0;pointer-events:none}
+.prog-track:hover .prog-dot{opacity:1}
+.right-ctrl{width:30%;display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:180px}
+.vol-row{display:flex;align-items:center;gap:6px;flex:1;max-width:150px}
+.vol-ico{font-size:14px;color:var(--t2);flex-shrink:0;cursor:pointer}
 .vol-track{flex:1;height:16px;display:flex;align-items:center;cursor:pointer;touch-action:none}
 .vol-bg{width:100%;height:4px;background:#535353;border-radius:2px;transition:height .15s}
 .vol-track:hover .vol-bg{height:6px}
-.vol-fill{height:100%;background:var(--white);border-radius:2px;transition:background .15s}
+.vol-fill{height:100%;background:var(--t1);border-radius:2px;transition:background .15s}
 .vol-track:hover .vol-fill{background:var(--green)}
 
-.mobile-player{display:none;flex-direction:column;background:#181818;border-top:1px solid #2a2a2a;position:fixed;bottom:0;left:0;right:0;z-index:15}
-.mob-prog{height:3px;background:#535353;cursor:pointer;flex-shrink:0}
-.mob-prog-fill{height:100%;background:var(--green)}
-.mob-bar{display:flex;align-items:center;gap:12px;padding:8px 16px;height:64px}
-.mob-art{width:48px;height:48px;border-radius:4px;flex-shrink:0;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--dim)}
+/* Sleep timer badge */
+.sleep-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:12px;background:rgba(29,185,84,.2);color:var(--green);letter-spacing:.5px;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+
+/* ── MOBILE PLAYER ── */
+.mob-player{display:none;flex-direction:column;background:#181818;border-top:1px solid #282828;position:fixed;bottom:0;left:0;right:0;z-index:20;padding-bottom:var(--safe-b)}
+.mob-prog{height:3px;background:#535353;cursor:pointer;touch-action:none;flex-shrink:0}
+.mob-prog-fill{height:100%;background:var(--green);pointer-events:none}
+.mob-bar{display:flex;align-items:center;gap:10px;padding:8px 14px;height:62px;cursor:pointer}
+.mob-art{width:46px;height:46px;border-radius:4px;flex-shrink:0;overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--dim)}
 .mob-art img{width:100%;height:100%;object-fit:cover;display:block}
 .mob-info{flex:1;min-width:0}
-.mob-title{font-size:14px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mob-artist{font-size:12px;color:var(--muted);margin-top:2px}
-.mob-btns{display:flex;align-items:center}
-.mob-btn{background:transparent;border:none;color:var(--white);font-size:22px;cursor:pointer;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.mob-play-btn{width:44px;height:44px;border-radius:50%;background:var(--white);border:none;color:var(--black);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mob-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mob-artist{font-size:11px;color:var(--t2);margin-top:1px}
+.mob-btns{display:flex;align-items:center;gap:0;flex-shrink:0}
+.mob-ctrl{background:transparent;border:none;color:var(--t1);font-size:22px;cursor:pointer;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.mob-play{width:42px;height:42px;border-radius:50%;background:var(--t1);border:none;color:var(--black);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:calc(56px + var(--safe-b));background:#121212;border-top:1px solid #2a2a2a;z-index:10;padding-bottom:var(--safe-b)}
-.bn-inner{display:flex;height:56px}
-.bn-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;color:var(--muted);font-family:'Figtree',sans-serif;font-size:10px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:color .15s}
-.bn-btn.active{color:var(--white)}.bn-icon{font-size:22px;line-height:1}
+/* ── EXPANDED MOBILE PLAYER ── */
+.exp-player{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;overflow:hidden;padding:var(--safe-t) var(--safe-l) var(--safe-b) var(--safe-r);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.exp-player.closed{transform:translateY(100%);pointer-events:none}
+.exp-player.open{transform:translateY(0)}
+.exp-bg{position:absolute;inset:0;z-index:-1}
+.exp-bg-blur{position:absolute;inset:0;backdrop-filter:blur(60px);-webkit-backdrop-filter:blur(60px);background:rgba(0,0,0,.7)}
+.exp-header{display:flex;align-items:center;padding:16px 20px 8px;flex-shrink:0}
+.exp-down-btn{background:transparent;border:none;color:var(--t2);font-size:26px;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;flex-shrink:0}
+.exp-down-btn:hover{background:rgba(255,255,255,.1)}
+.exp-title-area{flex:1;text-align:center}
+.exp-context{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.5px;text-transform:uppercase}
+.exp-pl-name{font-size:12px;color:var(--t2);margin-top:2px}
+.exp-more-btn{background:transparent;border:none;color:var(--t2);font-size:20px;cursor:pointer;width:40px;height:40px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.exp-art-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px 40px}
+.exp-art{width:min(72vw,360px);height:min(72vw,360px);border-radius:8px;box-shadow:0 24px 60px rgba(0,0,0,.7);overflow:hidden;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:80px;color:var(--dim)}
+.exp-art img{width:100%;height:100%;object-fit:cover;display:block}
+.exp-info{padding:0 28px 8px;flex-shrink:0}
+.exp-track-title{font-size:22px;font-weight:900;letter-spacing:-.5px;line-height:1.2;margin-bottom:4px}
+.exp-track-artist{font-size:14px;color:var(--t2)}
+.exp-prog{padding:0 24px;flex-shrink:0}
+.exp-prog-track{width:100%;height:20px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+.exp-prog-bg{width:100%;height:4px;background:#535353;border-radius:2px}
+.exp-prog-fill{height:100%;background:var(--t1);border-radius:2px}
+.exp-prog-times{display:flex;justify-content:space-between;padding:0 2px;margin-top:4px}
+.exp-prog-times span{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2)}
+.exp-ctrl{display:flex;align-items:center;justify-content:center;gap:4px;padding:12px 24px;flex-shrink:0}
+.exp-btn{background:transparent;border:none;color:var(--t2);font-size:26px;cursor:pointer;width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.exp-btn:hover{color:var(--t1)}.exp-btn.act{color:var(--green)}
+.exp-play{width:68px;height:68px;border-radius:50%;background:var(--t1);border:none;color:var(--black);font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;margin:0 8px}
+.exp-play:hover{transform:scale(1.05)}
+.exp-extra{display:flex;justify-content:space-between;align-items:center;padding:0 28px 16px;flex-shrink:0}
+.exp-extra-btn{background:transparent;border:none;color:var(--t2);font-size:20px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+.exp-extra-btn span{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.exp-extra-btn:hover{color:var(--t1)}.exp-extra-btn.act{color:var(--green)}
 
-.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 24px;border-radius:24px;border:none;font-family:'Figtree',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.3px}
-.btn-green{background:var(--green);color:var(--black)}.btn-green:hover{background:var(--green2);transform:scale(1.02)}
-.btn-outline{background:transparent;color:var(--white);border:1px solid #727272}.btn-outline:hover{border-color:var(--white)}
+/* ── BOTTOM NAV ── */
+.bnav{display:none;flex-shrink:0;background:#121212;border-top:1px solid #282828;padding-bottom:var(--safe-b)}
+.bnav-inner{display:flex;height:var(--bnav-h)}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:transparent;color:var(--t2);font-family:'Figtree',sans-serif;font-size:10px;font-weight:700;letter-spacing:.4px;cursor:pointer;transition:color .15s}
+.bnav-btn .bi{font-size:22px;line-height:1}
+.bnav-btn.act{color:var(--t1)}
+
+/* ── MODALS / OVERLAYS ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal{background:#282828;border-radius:8px;padding:28px;width:100%;max-width:380px;box-shadow:0 32px 80px rgba(0,0,0,.8)}
+.modal h3{font-size:20px;font-weight:900;margin-bottom:4px;letter-spacing:-.4px}
+.modal p{font-size:13px;color:var(--t2);margin-bottom:18px}
+.modal-input{width:100%;padding:11px 14px;background:var(--bg3);border:none;border-radius:4px;color:var(--t1);font-family:'Figtree',sans-serif;font-size:14px;outline:none;margin-bottom:4px}
+.modal-input:focus{box-shadow:0 0 0 2px var(--green)}
+.modal-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+
+.folder-modal{background:#111;border:1px solid #2a2a2a;border-radius:16px;padding:36px;max-width:400px;text-align:center}
+.folder-modal .fi{font-size:60px;margin-bottom:14px}
+.folder-modal h3{font-size:24px;font-weight:900;letter-spacing:-.4px;margin-bottom:8px}
+.folder-modal p{font-size:13px;color:var(--t2);margin-bottom:28px;line-height:1.65}
+.folder-modal-btn{width:100%;padding:15px;border-radius:8px;background:var(--green);border:none;color:var(--black);font-family:'Figtree',sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;transition:all .15s}
+.folder-modal-btn:hover{background:var(--green2)}
+.folder-modal-skip{background:transparent;border:none;color:var(--t2);font-family:'Figtree',sans-serif;font-size:12px;font-weight:700;cursor:pointer;padding:6px;transition:color .15s}
+.folder-modal-skip:hover{color:var(--t1)}
+
+/* Sleep timer modal */
+.sleep-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.sleep-opt{padding:12px;border-radius:6px;border:1px solid #3a3a3a;background:transparent;color:var(--t1);font-family:'Figtree',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;text-align:center}
+.sleep-opt:hover{border-color:var(--green);color:var(--green)}
+.sleep-opt.act{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+
+/* Context menu */
+.ctx{position:fixed;z-index:9999;background:#282828;border:1px solid #3a3a3a;border-radius:6px;padding:4px;box-shadow:0 16px 48px rgba(0,0,0,.7);min-width:190px}
+.ctx-item{padding:9px 14px;border-radius:3px;cursor:pointer;font-size:13px;font-weight:600;color:var(--t1);transition:background .1s;display:flex;align-items:center;gap:10px}
+.ctx-item:hover{background:var(--hover)}.ctx-item.danger{color:var(--red)}.ctx-item.accent{color:var(--green)}
+.ctx-sep{height:1px;background:#3a3a3a;margin:3px 0}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 22px;border-radius:24px;border:none;font-family:'Figtree',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.2px}
+.btn-g{background:var(--green);color:var(--black)}.btn-g:hover{background:var(--green2);transform:scale(1.02)}
+.btn-o{background:transparent;color:var(--t1);border:1px solid #727272}.btn-o:hover{border-color:var(--t1)}
 .btn-danger{background:transparent;color:var(--red)}.btn-sm{padding:6px 16px;font-size:12px}
 
-.empty{text-align:center;padding:60px 30px;color:var(--dim)}
-.empty-icon{font-size:48px;margin-bottom:16px;opacity:.4}
-.empty p{font-size:14px;font-weight:600;color:var(--muted)}
-.spinner{width:18px;height:18px;border:2.5px solid #535353;border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.toasts{position:fixed;bottom:calc(var(--player-h) + 12px);right:20px;display:flex;flex-direction:column;gap:8px;z-index:1000;pointer-events:none}
-.toast{background:#282828;border-radius:4px;padding:12px 18px;font-size:13px;font-weight:600;color:var(--white);box-shadow:0 8px 24px rgba(0,0,0,.5);animation:toast-in .2s ease;max-width:300px}
+/* Toast */
+.toasts{position:fixed;bottom:calc(var(--player-h) + 14px);right:18px;display:flex;flex-direction:column;gap:7px;z-index:1000;pointer-events:none}
+.toast{background:#282828;border-radius:4px;padding:11px 16px;font-size:13px;font-weight:600;color:var(--t1);box-shadow:0 8px 24px rgba(0,0,0,.5);animation:tin .18s ease;max-width:290px}
 .toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}.toast.info{border-left:3px solid #1e90ff}
-@keyframes toast-in{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
-.ctx-menu{position:fixed;z-index:9999;background:#282828;border:1px solid #3a3a3a;border-radius:4px;padding:4px;box-shadow:0 16px 48px rgba(0,0,0,.7);min-width:188px}
-.ctx-item{padding:10px 16px;border-radius:2px;cursor:pointer;font-size:13px;font-weight:600;color:var(--white);transition:background .1s}
-.ctx-item:hover{background:var(--hover)}.ctx-item.danger{color:var(--red)}.ctx-item.accent{color:var(--green)}
-.ctx-sep{height:1px;background:#3a3a3a;margin:4px 0}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
-.modal{background:#282828;border-radius:8px;padding:32px;width:100%;max-width:380px;box-shadow:0 32px 80px rgba(0,0,0,.8)}
-.modal h3{font-size:22px;font-weight:900;margin-bottom:4px;letter-spacing:-.5px}
-.modal p{font-size:13px;color:var(--muted);margin-bottom:20px}
-.modal input{width:100%;padding:12px 16px;background:var(--bg3);border:none;border-radius:4px;color:var(--white);font-family:'Figtree',sans-serif;font-size:14px;outline:none}
-.modal input:focus{box-shadow:0 0 0 2px var(--green)}
-.modal-btns{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
-.perm-modal{background:#121212;border:1px solid #2a2a2a;border-radius:16px;padding:40px;max-width:420px;text-align:center}
-.perm-icon{font-size:64px;margin-bottom:16px}
-.perm-title{font-size:26px;font-weight:900;letter-spacing:-.5px;margin-bottom:8px}
-.perm-desc{font-size:14px;color:var(--muted);margin-bottom:32px;line-height:1.7}
-.perm-btn{width:100%;padding:16px;border-radius:8px;background:var(--green);border:none;color:var(--black);font-family:'Figtree',sans-serif;font-size:16px;font-weight:800;cursor:pointer;letter-spacing:.5px;transition:all .15s;margin-bottom:10px}
-.perm-btn:hover{background:var(--green2)}
-.perm-skip{background:transparent;border:none;color:var(--muted);font-family:'Figtree',sans-serif;font-size:13px;font-weight:600;cursor:pointer;padding:8px}
-.perm-skip:hover{color:var(--white)}
-.dl-bar{position:fixed;bottom:calc(var(--player-h) + 60px);left:50%;transform:translateX(-50%);background:#282828;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:600;color:var(--white);box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:999;display:flex;align-items:center;gap:10px;white-space:nowrap}
+@keyframes tin{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
 
-@media(max-width:900px){.app{--sidebar-w:200px}}
-@media(max-width:700px){
-  .app{grid-template-columns:1fr;grid-template-rows:1fr auto}
-  .sidebar-wrap{display:none}.main-wrap{grid-column:1;margin:0;border-radius:0}
-  .player-wrap{display:none}.mobile-player{display:flex}.bottom-nav{display:block}
-  .page{padding:0 16px calc(56px + 76px + 16px)}
-  .toasts{bottom:calc(56px + 80px);right:12px}
-  .track-row{grid-template-columns:40px 1fr 70px 36px}
-  .tr-col-artist,.tr-col-album,.track-table-head span:nth-child(3),.track-table-head span:nth-child(4){display:none}
-  .hero-bg{height:180px;min-height:180px}.hero-greeting{font-size:22px}
-  .pl-title{font-size:28px}.pl-cover{width:120px;height:120px;font-size:36px}
-  .pl-header{padding:24px 16px 16px}.cards-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
-  .section-title{font-size:18px}
+/* DL Progress */
+.dl-progress{position:fixed;bottom:calc(var(--player-h) + 58px);left:50%;transform:translateX(-50%);background:#282828;border-radius:6px;padding:10px 18px;font-size:12px;font-weight:700;color:var(--t1);box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:999;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.dl-progress-bar{position:fixed;bottom:calc(var(--player-h) + 58px);left:50%;transform:translateX(-50%);width:260px;height:3px;background:#3a3a3a;border-radius:2px;z-index:998}
+.dl-progress-fill{height:100%;background:var(--green);border-radius:2px;transition:width .1s}
+
+/* Empty state */
+.empty{text-align:center;padding:56px 24px;color:var(--dim)}
+.empty-icon{font-size:44px;margin-bottom:14px;opacity:.35}
+.empty p{font-size:13px;font-weight:600;color:var(--t2);max-width:260px;margin:0 auto}
+
+.spinner{width:18px;height:18px;border:2.5px solid #535353;border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── RESPONSIVE ── */
+@media(min-width:1200px){
+  .sidebar{width:260px;min-width:260px}
 }
-@media(max-width:480px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:1000px){
+  .sidebar{width:200px;min-width:200px}
+  .tbl-head-cols,.tbl-row-cols{grid-template-columns:36px 1fr 160px 70px 32px}
+  .col-album{display:none}
+}
+@media(max-width:800px){
+  .sidebar{width:180px;min-width:180px}
+  .tbl-head-cols,.tbl-row-cols{grid-template-columns:36px 1fr 70px 32px}
+  .col-album,.col-artist{display:none}
+  .row-artist-sm{display:block}
+  .cards-row{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+}
+@media(max-width:700px){
+  .sidebar{display:none}
+  .main{margin:0;border-radius:0}
+  .app-player{display:none}
+  .mob-player{display:flex}
+  .bnav{display:flex;flex-direction:column}
+  .page{padding:14px 14px calc(var(--bnav-h) + var(--safe-b) + 78px)}
+  .topbar{padding:10px 14px 0}
+  .hero{margin:0 -14px 18px;min-height:160px}
+  .hero-greeting{font-size:22px}
+  .cards-row{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+  .section-h{font-size:16px}
+  .tbl-head{display:none}
+  .tbl-head-cols,.tbl-row-cols{grid-template-columns:36px 1fr 70px 32px}
+  .col-album,.col-artist{display:none}
+  .row-artist-sm{display:block}
+  .pl-header{padding:24px 14px 16px;margin:0 -14px 0}
+  .pl-cover{width:110px;height:110px;font-size:40px}
+  .pl-h-name{font-size:26px}
+  .folder-btn{max-width:110px;font-size:10px;padding:5px 10px}
+  .toasts{bottom:calc(var(--bnav-h) + var(--safe-b) + 72px);right:10px}
+  .dl-progress{bottom:calc(var(--bnav-h) + var(--safe-b) + 72px)}
+  .dl-progress-bar{bottom:calc(var(--bnav-h) + var(--safe-b) + 68px)}
+  .recent-strip{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+  .cards-row{grid-template-columns:repeat(2,1fr)}
+  .recent-strip{grid-template-columns:1fr 1fr}
+}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const {useState,useEffect,useRef,useCallback}=React;
+const {useState,useEffect,useRef,useCallback,useMemo}=React;
 
-if('serviceWorker' in navigator){
+// ── Service Worker ────────────────────────────────────────────────────────────
+if('serviceWorker' in navigator)
   window.addEventListener('load',()=>navigator.serviceWorker.register('/static/sw.js',{scope:'/'}).catch(()=>{}));
-}
 
+// ── API ───────────────────────────────────────────────────────────────────────
 const api={
-  get:u=>fetch(u).then(r=>r.json()),
+  get:u=>fetch(u).then(r=>{if(!r.ok)throw new Error(`${r.status}`);return r.json()}),
   post:(u,b)=>fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json()),
   put:(u,b)=>fetch(u,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json()),
   del:u=>fetch(u,{method:'DELETE'}).then(r=>r.json()),
@@ -273,9 +405,9 @@ const api={
 };
 const fmt=s=>{if(!s&&s!==0)return'--:--';const t=Math.floor(s),m=Math.floor(t/60);return`${m}:${String(t%60).padStart(2,'0')}`};
 
-// IndexedDB
+// ── IndexedDB ─────────────────────────────────────────────────────────────────
 const IDB={_db:null,
-  open(){if(this._db)return Promise.resolve(this._db);return new Promise((res,rej)=>{const r=indexedDB.open('lily-offline',2);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains('tracks'))db.createObjectStore('tracks',{keyPath:'id'});if(!db.objectStoreNames.contains('settings'))db.createObjectStore('settings',{keyPath:'key'})};r.onsuccess=e=>{this._db=e.target.result;res(this._db)};r.onerror=()=>rej(r.error)})},
+  open(){if(this._db)return Promise.resolve(this._db);return new Promise((res,rej)=>{const r=indexedDB.open('lily-v3',1);r.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains('tracks'))db.createObjectStore('tracks',{keyPath:'id'});if(!db.objectStoreNames.contains('settings'))db.createObjectStore('settings',{keyPath:'key'})};r.onsuccess=e=>{this._db=e.target.result;res(this._db)};r.onerror=()=>rej(r.error)})},
   async save(id,blob,meta){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('tracks','readwrite');tx.objectStore('tracks').put({id,blob,meta,savedAt:Date.now()});tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})},
   async get(id){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('tracks','readonly');const r=tx.objectStore('tracks').get(id);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})},
   async del(id){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('tracks','readwrite');tx.objectStore('tracks').delete(id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})},
@@ -285,392 +417,523 @@ const IDB={_db:null,
   async getSetting(key){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('settings','readonly');const r=tx.objectStore('settings').get(key);r.onsuccess=()=>res(r.result?.value);r.onerror=()=>rej(r.error)})}
 };
 
-// Folder Manager
-const FolderMgr={_handle:null,
-  async requestFolder(){if(!window.showDirectoryPicker)return null;try{const h=await window.showDirectoryPicker({mode:'readwrite',startIn:'music'});this._handle=h;await IDB.setSetting('folderName',h.name);return h}catch(e){if(e.name==='AbortError')return null;throw e}},
-  async saveToFolder(filename,blob){if(!this._handle)return false;try{const fh=await this._handle.getFileHandle(filename,{create:true});const w=await fh.createWritable();await w.write(blob);await w.close();return true}catch(e){return false}},
-  hasFolder(){return!!this._handle},getFolderName(){return this._handle?.name||null}
+// ── Folder Manager ────────────────────────────────────────────────────────────
+const FolderMgr={_h:null,
+  async request(){if(!window.showDirectoryPicker)return null;try{const h=await window.showDirectoryPicker({mode:'readwrite',startIn:'music'});this._h=h;await IDB.setSetting('folderName',h.name);return h}catch(e){if(e.name==='AbortError')return null;throw e}},
+  async save(name,blob){if(!this._h)return false;try{const fh=await this._h.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(blob);await w.close();return true}catch{return false}},
+  has(){return!!this._h},name(){return this._h?.name||null}
 };
 
-function getCacheId(track){if(track.source==='local')return`local_${track.id}`;return`${track.source}_${track.source_id||track.id}`}
+function cacheId(track){return track.source==='local'?`local_${track.id}`:`${track.source}_${track.source_id||track.id}`}
 
-async function downloadTrackToCache(track,onProgress){
-  let streamUrl;
-  if(track.source==='local')streamUrl=`/api/stream/${track.id}`;
-  else if(track.source==='saavn'){let ru=`/api/resolve/saavn/${encodeURIComponent(track.source_id)}`;if(track.stream_url)ru+=`?stream_url=${encodeURIComponent(track.stream_url)}`;const r=await api.get(ru);streamUrl=r.url;}
-  else if(track.source==='youtube'){const r=await api.get(`/api/resolve/youtube/${encodeURIComponent(track.source_id)}`);streamUrl=r.url;}
-  if(!streamUrl)throw new Error('No stream URL');
-  const resp=await fetch(streamUrl);if(!resp.ok)throw new Error(`HTTP ${resp.status}`);
+// ── Download ──────────────────────────────────────────────────────────────────
+async function downloadTrack(track,onProgress){
+  let url;
+  if(track.source==='local')url=`/api/stream/${track.id}`;
+  else if(track.source==='saavn'){let ru=`/api/resolve/saavn/${encodeURIComponent(track.source_id)}`;if(track.stream_url)ru+=`?stream_url=${encodeURIComponent(track.stream_url)}`;url=(await api.get(ru)).url}
+  else if(track.source==='youtube')url=(await api.get(`/api/resolve/youtube/${encodeURIComponent(track.source_id)}`)).url;
+  if(!url)throw new Error('No stream URL');
+  const resp=await fetch(url);if(!resp.ok)throw new Error(`HTTP ${resp.status}`);
   const total=parseInt(resp.headers.get('content-length')||'0');
   const reader=resp.body.getReader();const chunks=[];let loaded=0;
   while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);loaded+=value.length;if(total&&onProgress)onProgress(loaded/total)}
   const blob=new Blob(chunks,{type:'audio/mpeg'});
-  const cacheId=getCacheId(track);
-  await IDB.save(cacheId,blob,{id:track.id,source_id:track.source_id,source:track.source,title:track.title,artist:track.artist,album:track.album,duration:track.duration,image_url:track.image_url});
-  if(FolderMgr.hasFolder()){const safe=(track.title||'track').replace(/[<>:"/\\|?*]/g,'_');await FolderMgr.saveToFolder(`${safe}.mp3`,blob)}
-  return cacheId;
+  const cid=cacheId(track);
+  await IDB.save(cid,blob,{id:track.id,source_id:track.source_id,source:track.source,title:track.title,artist:track.artist,album:track.album,duration:track.duration,image_url:track.image_url});
+  if(FolderMgr.has()){const safe=(track.title||'track').replace(/[<>:"/\\|?*]/g,'_');await FolderMgr.save(`${safe}.mp3`,blob)}
+  return cid;
 }
 
-// Media Session
-function setMediaSession(track,artUrl,handlers){
+// ── Media Session ─────────────────────────────────────────────────────────────
+function setMS(track,artUrl,h){
   if(!('mediaSession' in navigator))return;
   try{
     navigator.mediaSession.metadata=new MediaMetadata({title:track.title||'',artist:track.artist||'',album:track.album||'',artwork:artUrl?[{src:artUrl,sizes:'512x512',type:'image/jpeg'}]:[]});
-    Object.entries(handlers).forEach(([k,v])=>{try{navigator.mediaSession.setActionHandler(k,v)}catch(e){}});
-    navigator.mediaSession.setActionHandler('seekbackward',()=>{const a=document.querySelector('audio._lily');if(a)a.currentTime=Math.max(0,a.currentTime-10)});
-    navigator.mediaSession.setActionHandler('seekforward',()=>{const a=document.querySelector('audio._lily');if(a)a.currentTime=Math.min(a.duration||0,a.currentTime+10)});
+    const keys={play:'play',pause:'pause',previoustrack:'prev',nexttrack:'next',seekto:'seekto'};
+    Object.entries(keys).forEach(([k,v])=>{ try{navigator.mediaSession.setActionHandler(k,h[v]||null)}catch(e){} });
+    try{navigator.mediaSession.setActionHandler('seekbackward',()=>{const a=document.querySelector('audio._lily');if(a)a.currentTime=Math.max(0,a.currentTime-10)})}catch(e){}
+    try{navigator.mediaSession.setActionHandler('seekforward',()=>{const a=document.querySelector('audio._lily');if(a)a.currentTime=Math.min(a.duration||0,a.currentTime+10)})}catch(e){}
   }catch(e){}
 }
 function setMSState(p){try{if('mediaSession' in navigator)navigator.mediaSession.playbackState=p?'playing':'paused'}catch(e){}}
 function setMSPos(pos,dur){try{if('mediaSession' in navigator&&dur&&isFinite(dur))navigator.mediaSession.setPositionState({duration:dur,playbackRate:1,position:pos})}catch(e){}}
 
-const useIsOnline=()=>{const[on,setOn]=useState(navigator.onLine);useEffect(()=>{const h=()=>setOn(navigator.onLine);window.addEventListener('online',h);window.addEventListener('offline',h);return()=>{window.removeEventListener('online',h);window.removeEventListener('offline',h)}},[]);return on};
+// ── Hooks ─────────────────────────────────────────────────────────────────────
+const useOnline=()=>{const[on,set]=useState(navigator.onLine);useEffect(()=>{const u=()=>set(navigator.onLine);window.addEventListener('online',u);window.addEventListener('offline',u);return()=>{window.removeEventListener('online',u);window.removeEventListener('offline',u)}},[]);return on};
+const useMobile=()=>{const[m,set]=useState(window.innerWidth<=700);useEffect(()=>{const u=()=>set(window.innerWidth<=700);window.addEventListener('resize',u);return()=>window.removeEventListener('resize',u)},[]);return m};
 
-function ArtImg({track,size=40,radius=4}){
+// ── ArtImg ────────────────────────────────────────────────────────────────────
+function ArtImg({track,size=40,radius=4,style={}}){
   const[src,setSrc]=useState(null);
-  useEffect(()=>{if(!track){setSrc(null);return}if(track.source==='local'&&track.id)setSrc(`/api/artwork/${track.id}`);else if(track.image_url)setSrc(track.image_url);else setSrc(null)},[track?.id,track?.image_url]);
-  const s={width:size,height:size,borderRadius:radius,flexShrink:0,overflow:'hidden'};
-  if(!src)return<div style={{...s,background:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--dim)',fontSize:size*.38}}>♪</div>;
-  return<div style={s}><img src={src} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} onError={()=>setSrc(null)} alt=""/></div>;
+  useEffect(()=>{if(!track)return setSrc(null);if(track.source==='local'&&track.id)setSrc(`/api/artwork/${track.id}`);else if(track.image_url)setSrc(track.image_url);else setSrc(null)},[track?.id,track?.image_url,track?.source]);
+  const base={width:size,height:size,borderRadius:radius,flexShrink:0,overflow:'hidden',...style};
+  if(!src)return<div style={{...base,background:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--dim)',fontSize:size*.35}}>♪</div>;
+  return<div style={base}><img src={src} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} onError={()=>setSrc(null)} alt=""/></div>;
 }
 
-function Slider({value=0,onSeek,trackClass='prog-track',bgClass='prog-bg',fillClass='prog-fill',handleClass='prog-handle'}){
+// ── Slider ────────────────────────────────────────────────────────────────────
+function Slider({value=0,onSeek,trackCls,bgCls,fillCls,dotCls,style={}}){
   const ref=useRef(),drag=useRef(false),dv=useRef(value);
   const[disp,setDisp]=useState(value);
   const calc=e=>{const r=ref.current.getBoundingClientRect();const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;return Math.max(0,Math.min(1,x/r.width))};
   useEffect(()=>{if(!drag.current)setDisp(value)},[value]);
-  return<div ref={ref} className={trackClass}
+  return<div ref={ref} className={trackCls} style={style}
     onMouseDown={e=>{drag.current=true;const v=calc(e);dv.current=v;setDisp(v)}}
-    onMouseMove={e=>{if(!drag.current)return;const v=calc(e);dv.current=v;setDisp(v);onSeek(v)}}
-    onMouseUp={e=>{if(!drag.current)return;onSeek(dv.current);drag.current=false}}
-    onMouseLeave={()=>{drag.current=false}}
+    onMouseMove={e=>{if(!drag.current)return;const v=calc(e);dv.current=v;setDisp(v);onSeek(v,false)}}
+    onMouseUp={e=>{if(!drag.current)return;onSeek(dv.current,true);drag.current=false}}
+    onMouseLeave={()=>{if(drag.current){onSeek(dv.current,true);drag.current=false}}}
     onTouchStart={e=>{e.preventDefault();drag.current=true;const v=calc(e);dv.current=v;setDisp(v)}}
-    onTouchMove={e=>{e.preventDefault();if(!drag.current)return;const v=calc(e);dv.current=v;setDisp(v);onSeek(v)}}
-    onTouchEnd={e=>{e.preventDefault();drag.current=false}}>
-    <div className={bgClass}><div className={fillClass} style={{width:`${disp*100}%`}}/><div className={handleClass} style={{left:`${disp*100}%`}}/></div>
+    onTouchMove={e=>{e.preventDefault();if(!drag.current)return;const v=calc(e);dv.current=v;setDisp(v);onSeek(v,false)}}
+    onTouchEnd={e=>{e.preventDefault();onSeek(dv.current,true);drag.current=false}}>
+    <div className={bgCls}><div className={fillCls} style={{width:`${disp*100}%`}}/>{dotCls&&<div className={dotCls} style={{left:`${disp*100}%`}}/>}</div>
   </div>;
 }
 
-const Toasts=({toasts})=><div className="toasts">{toasts.map(t=><div key={t.id} className={`toast ${t.type}`}>{t.msg}</div>)}</div>;
+// ── Toast ─────────────────────────────────────────────────────────────────────
+const Toasts=({items})=><div className="toasts">{items.map(t=><div key={t.id} className={`toast ${t.type}`}>{t.msg}</div>)}</div>;
 
+// ── Context Menu ──────────────────────────────────────────────────────────────
 function CtxMenu({x,y,items,onClose}){
   const ref=useRef();
   useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))onClose()};document.addEventListener('mousedown',h);document.addEventListener('touchstart',h);return()=>{document.removeEventListener('mousedown',h);document.removeEventListener('touchstart',h)}},[]);
-  const mx=Math.min(x,window.innerWidth-200),my=Math.min(y,window.innerHeight-280);
-  return<div className="ctx-menu" ref={ref} style={{left:mx,top:my}}>
-    {items.map((it,i)=>it===null?<div key={i} className="ctx-sep"/>:<div key={i} className={`ctx-item${it.danger?' danger':''}${it.accent?' accent':''}`} onClick={()=>{it.action();onClose()}}>{it.label}</div>)}
+  const lx=Math.min(x,window.innerWidth-200),ly=Math.min(y,window.innerHeight-300);
+  return<div className="ctx" ref={ref} style={{left:lx,top:ly}}>
+    {items.map((it,i)=>it===null?<div key={i} className="ctx-sep"/>:
+      <div key={i} className={`ctx-item${it.danger?' danger':''}${it.accent?' accent':''}`} onClick={()=>{it.action();onClose()}}>
+        {it.icon&&<span>{it.icon}</span>}{it.label}
+      </div>)}
   </div>;
 }
 
+// ── Modal ─────────────────────────────────────────────────────────────────────
 function Modal({title,desc,placeholder,defaultValue='',onOk,onClose}){
   const[val,setVal]=useState(defaultValue);const ref=useRef();
   useEffect(()=>{setTimeout(()=>ref.current?.focus(),80)},[]);
-  return<div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
+  return<div className="overlay" onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
     <div className="modal"><h3>{title}</h3>{desc&&<p>{desc}</p>}
-      <input ref={ref} value={val} onChange={e=>setVal(e.target.value)} placeholder={placeholder||title} onKeyDown={e=>{if(e.key==='Enter'&&val.trim())onOk(val.trim());if(e.key==='Escape')onClose()}}/>
-      <div className="modal-btns"><button className="btn btn-outline btn-sm" onClick={onClose}>Cancel</button><button className="btn btn-green btn-sm" onClick={()=>val.trim()&&onOk(val.trim())}>Save</button></div>
+      <input ref={ref} className="modal-input" value={val} onChange={e=>setVal(e.target.value)} placeholder={placeholder||title}
+        onKeyDown={e=>{if(e.key==='Enter'&&val.trim())onOk(val.trim());if(e.key==='Escape')onClose()}}/>
+      <div className="modal-btns"><button className="btn btn-o btn-sm" onClick={onClose}>Cancel</button><button className="btn btn-g btn-sm" onClick={()=>val.trim()&&onOk(val.trim())}>Save</button></div>
     </div>
   </div>;
 }
 
-function FolderPermModal({onGrant,onSkip}){
-  return<div className="modal-overlay">
-    <div className="perm-modal">
-      <div className="perm-icon">📁</div>
-      <div className="perm-title">Choose Download Folder</div>
-      <div className="perm-desc">Lily will save downloaded songs to a folder on your device so you can listen offline — even without internet. Your music, yours to keep.</div>
-      <button className="perm-btn" onClick={onGrant}>📂 Choose Folder</button>
-      <button className="perm-skip" onClick={onSkip}>Skip (saves in app only)</button>
+// ── Folder Modal ──────────────────────────────────────────────────────────────
+function FolderModal({onGrant,onSkip}){
+  return<div className="overlay">
+    <div className="folder-modal">
+      <div className="fi">📁</div>
+      <h3>Choose Download Folder</h3>
+      <p>Lily will save downloaded songs to a folder on your device so you can listen offline — even without internet.</p>
+      <button className="folder-modal-btn" onClick={onGrant}>📂 Choose Folder</button>
+      <button className="folder-modal-skip" onClick={onSkip}>Skip (save in-app only)</button>
     </div>
   </div>;
 }
 
-function PlPicker({playlists,onPick,onClose}){
-  return<div className="modal-overlay" onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
-    <div className="modal"><h3>Add to Playlist</h3>
-      {playlists.length===0?<p>No playlists yet.</p>:playlists.map(p=>(
-        <div key={p.id} style={{padding:'12px 16px',borderRadius:4,cursor:'pointer',marginTop:4,color:'var(--white)',fontWeight:600,fontSize:14,transition:'background .12s'}}
-          onMouseOver={e=>e.currentTarget.style.background='var(--hover)'} onMouseOut={e=>e.currentTarget.style.background='transparent'} onClick={()=>onPick(p.id)}>♫ {p.name}</div>
-      ))}
-      <div className="modal-btns"><button className="btn btn-outline btn-sm" onClick={onClose}>Cancel</button></div>
-    </div>
-  </div>;
-}
-
-function HomePage({onPlay}){
-  const[charts,setCharts]=useState([]);const[releases,setReleases]=useState([]);
-  const hr=new Date().getHours();const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
-  useEffect(()=>{api.get('/api/charts').then(setCharts).catch(()=>{});api.get('/api/releases').then(setReleases).catch(()=>{})},[]);
-  const Card=({t})=>(
-    <div className="track-card" onClick={()=>onPlay(t,[t],0)}>
-      {t.image_url?<img src={t.image_url} className="card-art" alt="" onError={e=>e.target.style.display='none'}/>:<div className="card-art-ph">♪</div>}
-      <div className="card-title" title={t.title}>{t.title}</div>
-      <div className="card-artist">{t.artist}</div>
-      <button className="card-play-btn" onClick={e=>{e.stopPropagation();onPlay(t,[t],0)}}>▶</button>
-    </div>
-  );
-  return<div className="page page-fade" style={{paddingTop:0}}>
-    <div className="hero-bg" style={{background:'linear-gradient(135deg,#5038a0 0%,#1a3a4a 60%,var(--bg) 100%)'}}>
-      <div className="hero-content"><div className="hero-greeting">🌸 {greet}</div><div className="hero-sub">Welcome back to Lily</div></div>
-    </div>
-    {charts.length>0&&<><div className="section-title">🔥 Trending</div><div className="cards-grid">{charts.slice(0,12).map((t,i)=><Card key={t.source_id||i} t={t}/>)}</div></>}
-    {releases.length>0&&<><div className="section-title">✨ New Releases</div><div className="cards-grid">{releases.slice(0,12).map((t,i)=><Card key={t.source_id||i} t={t}/>)}</div></>}
-    {!charts.length&&!releases.length&&<div className="empty"><div className="empty-icon">🌸</div><p>Search for music or upload your own files</p></div>}
-  </div>;
-}
-
-function SearchPage({currentTrack,onPlay,onCtx}){
-  const[q,setQ]=useState('');const[tab,setTab]=useState('saavn');
-  const[saavnR,setSaavnR]=useState([]);const[ytR,setYtR]=useState([]);
-  const[loading,setLoading]=useState({saavn:false,yt:false});const inRef=useRef();
-  useEffect(()=>{setTimeout(()=>inRef.current?.focus(),100)},[]);
-  const search=async()=>{if(!q.trim())return;setLoading({saavn:true,yt:true});setSaavnR([]);setYtR([]);
-    api.get(`/api/search/saavn?q=${encodeURIComponent(q)}`).then(r=>{setSaavnR(r);setLoading(l=>({...l,saavn:false}))}).catch(()=>setLoading(l=>({...l,saavn:false})));
-    api.get(`/api/search/youtube?q=${encodeURIComponent(q)}`).then(r=>{setYtR(r);setLoading(l=>({...l,yt:false}))}).catch(()=>setLoading(l=>({...l,yt:false})));
-  };
-  const results=tab==='saavn'?saavnR:ytR,isLoading=tab==='saavn'?loading.saavn:loading.yt;
-  return<div className="page page-fade" style={{display:'flex',flexDirection:'column',paddingTop:0,height:'100%',overflow:'hidden'}}>
-    <div style={{padding:'24px 0 20px',flexShrink:0}}>
-      <div className="search-bar">
-        <span style={{color:'#737373',fontSize:16}}>⌕</span>
-        <input ref={inRef} type="search" placeholder="What do you want to play?" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&search()}/>
-        <button className="btn btn-green btn-sm" style={{borderRadius:4}} onClick={search}>Search</button>
+// ── Sleep Timer Modal ─────────────────────────────────────────────────────────
+function SleepModal({currentMins,onSet,onClose}){
+  const[sel,setSel]=useState(currentMins||null);
+  const opts=[5,10,15,20,30,45,60,90,120];
+  return<div className="overlay" onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
+    <div className="modal">
+      <h3>⏱ Sleep Timer</h3>
+      <p>Music will stop playing after the selected time.</p>
+      <div className="sleep-grid">
+        {opts.map(m=><button key={m} className={`sleep-opt${sel===m?' act':''}`} onClick={()=>setSel(m)}>{m}m</button>)}
+      </div>
+      {sel&&<button className="sleep-opt act" style={{width:'100%',marginBottom:4}} onClick={()=>setSel(null)}>Off</button>}
+      <div className="modal-btns">
+        <button className="btn btn-o btn-sm" onClick={onClose}>Cancel</button>
+        <button className="btn btn-g btn-sm" onClick={()=>{onSet(sel);onClose()}}>Set Timer</button>
       </div>
     </div>
-    <div className="tabs">
-      <button className={`tab${tab==='saavn'?' active':''}`} onClick={()=>setTab('saavn')}>🎵 JioSaavn{saavnR.length?` (${saavnR.length})`:''}</button>
-      <button className={`tab${tab==='youtube'?' active':''}`} onClick={()=>setTab('youtube')}>▶ YouTube{ytR.length?` (${ytR.length})`:''}</button>
-    </div>
-    <div style={{flex:1,overflowY:'auto'}}>
-      {isLoading&&<div style={{textAlign:'center',padding:'60px 0',color:'var(--muted)'}}><div className="spinner" style={{margin:'0 auto 16px'}}/>Searching…</div>}
-      {!isLoading&&results.length===0&&q&&<div className="empty"><div className="empty-icon">🔍</div><p>No results for "{q}"</p></div>}
-      {results.map((t,i)=>{const active=currentTrack?.source_id===t.source_id;return<div key={t.source_id||i} className="result-row" style={active?{background:'rgba(29,185,84,.08)'}:{}} onClick={()=>onPlay(t,[t],0)} onContextMenu={e=>{e.preventDefault();onCtx(e,t)}}>
-        <div className="result-thumb">{t.image_url?<img src={t.image_url} alt="" onError={e=>e.target.style.display='none'}/>:'♪'}</div>
-        <div className="result-info"><div className="r-title" style={active?{color:'var(--green)'}:{}}>{t.title}</div><div className="r-meta">{t.artist}{t.album&&t.album!=='YouTube'?` · ${t.album}`:''}</div></div>
-        {t.duration>0&&<span className="result-dur">{fmt(t.duration)}</span>}
-        <span className={`source-pill ${tab==='saavn'?'sp-saavn':'sp-yt'}`}>{tab==='saavn'?'Saavn':'YT'}</span>
-      </div>})}
+  </div>;
+}
+
+// ── Playlist Picker ───────────────────────────────────────────────────────────
+function PlPicker({playlists,onPick,onClose}){
+  return<div className="overlay" onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
+    <div className="modal"><h3>Add to Playlist</h3>
+      {playlists.length===0?<p style={{marginBottom:0}}>No playlists yet.</p>:playlists.map(p=>(
+        <div key={p.id} style={{padding:'11px 14px',borderRadius:4,cursor:'pointer',color:'var(--t1)',fontWeight:600,fontSize:13,transition:'background .12s'}}
+          onMouseOver={e=>e.currentTarget.style.background='var(--hover)'} onMouseOut={e=>e.currentTarget.style.background=''}
+          onClick={()=>onPick(p.id)}>♫ {p.name}</div>))}
+      <div className="modal-btns"><button className="btn btn-o btn-sm" onClick={onClose}>Cancel</button></div>
     </div>
   </div>;
 }
 
-function LibraryPage({currentTrack,onPlay,onCtx,toast,offlineKeys}){
-  const[tracks,setTracks]=useState([]);const[filter,setFilter]=useState('');const[uploading,setUploading]=useState(false);const[drag,setDrag]=useState(false);const fileRef=useRef();const folderRef=useRef();
-  const load=useCallback(()=>{api.get(`/api/tracks${filter?`?search=${encodeURIComponent(filter)}`:''}`).then(setTracks).catch(()=>{})},[filter]);
-  useEffect(()=>{load()},[load]);
-  const handleFiles=async files=>{if(!files.length)return;setUploading(true);try{const r=await api.upload(Array.from(files));toast(`✓ Added ${r.added} track${r.added!==1?'s':''}`, 'success');load()}catch{toast('Upload failed','error')}finally{setUploading(false)}};
-  return<div className="page page-fade" style={{paddingTop:24}}>
-    <div style={{marginBottom:24}}><div style={{fontSize:28,fontWeight:900,letterSpacing:'-1px'}}>Your Library</div><div style={{fontSize:13,color:'var(--muted)',marginTop:4}}>{tracks.length} tracks</div></div>
-    <div className={`upload-zone${uploading?' uploading':''}${drag?' drag-over':''}`}
-      onClick={()=>!uploading&&fileRef.current.click()} onDrop={e=>{e.preventDefault();setDrag(false);handleFiles(e.dataTransfer.files)}}
-      onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)}>
-      <input ref={fileRef} type="file" multiple accept=".mp3,.flac,.ogg,.opus,.m4a,.aac,.wav,.wma" style={{display:'none'}} onChange={e=>handleFiles(e.target.files)}/>
-      <input ref={folderRef} type="file" multiple style={{display:'none'}} onChange={e=>handleFiles(e.target.files)} webkitdirectory=""/>
-      <div className="upload-icon">{uploading?'⏳':'🎵'}</div>
-      {uploading?<p><span>Importing…</span></p>:<p>Drop audio files here or <span>click to browse</span></p>}
-      <p style={{fontSize:11,color:'var(--dim)',marginTop:6}}>MP3 · FLAC · OGG · M4A · WAV · OPUS</p>
-    </div>
-    <div style={{position:'relative',marginBottom:20}}>
-      <span style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',color:'var(--muted)',fontSize:15}}>⌕</span>
-      <input type="text" placeholder="Filter…" value={filter} onChange={e=>setFilter(e.target.value)} style={{width:'100%',padding:'10px 16px 10px 40px',background:'var(--bg3)',border:'none',borderRadius:4,color:'var(--white)',fontFamily:'Figtree',fontSize:13,fontWeight:500,outline:'none'}}/>
-    </div>
-    <TrackTable tracks={tracks} currentId={currentTrack?.id} onPlay={(t,i,ts)=>onPlay(t,ts,i)} onCtx={onCtx} offlineKeys={offlineKeys}/>
-  </div>;
-}
-
-function DownloadsPage({onPlay,currentTrack}){
-  const[tracks,setTracks]=useState([]);const[loading,setLoading]=useState(true);
-  const load=()=>IDB.all().then(items=>{setTracks(items.map(it=>({...it.meta,_offlineId:it.id,source:'offline'})));setLoading(false)}).catch(()=>setLoading(false));
-  useEffect(()=>{load()},[]);
-  const playOffline=async t=>{const item=await IDB.get(t._offlineId);if(!item)return;const url=URL.createObjectURL(item.blob);onPlay({...t,_offlineUrl:url,source:'offline'},[{...t,_offlineUrl:url,source:'offline'}],0)};
-  return<div className="page page-fade" style={{paddingTop:24}}>
-    <div style={{marginBottom:24}}><div style={{fontSize:28,fontWeight:900,letterSpacing:'-1px'}}>📥 Downloads</div><div style={{fontSize:13,color:'var(--muted)',marginTop:4}}>{tracks.length} songs saved offline</div></div>
-    {loading&&<div style={{textAlign:'center',padding:'60px 0',color:'var(--muted)'}}><div className="spinner" style={{margin:'0 auto 16px'}}/>Loading…</div>}
-    {!loading&&tracks.length===0&&<div className="empty"><div className="empty-icon">📥</div><p>No downloads yet — right-click any song to download it</p></div>}
-    {tracks.map((t,i)=><div key={t._offlineId||i} className="result-row" onClick={()=>playOffline(t)}>
-      <div className="result-thumb">{t.image_url?<img src={t.image_url} alt="" onError={e=>e.target.style.display='none'}/>:'♪'}</div>
-      <div className="result-info"><div className="r-title">{t.title||'Unknown'}</div><div className="r-meta">{t.artist||'Unknown Artist'}</div></div>
-      <span className="source-pill sp-offline">Offline</span>
-    </div>)}
-  </div>;
-}
-
-function TrackTable({tracks,currentId,onPlay,onCtx,offlineKeys=[]}){
+// ── TrackTable ────────────────────────────────────────────────────────────────
+function TrackTable({tracks,currentId,onPlay,onCtx,offlineKeys=[],showAlbum=true,showArtist=true}){
   if(!tracks.length)return<div className="empty"><div className="empty-icon">🎵</div><p>No tracks here yet</p></div>;
-  const mobile=window.innerWidth<=700;
+  const isMob=window.innerWidth<=700;
+  const colCls=isMob?'tbl-row-cols':'tbl-row-cols';
   return<div>
-    {!mobile&&<div className="track-table-head"><span>#</span><span>Title</span><span>Artist</span><span>Album</span><span>Time</span><span></span></div>}
-    {tracks.map((t,i)=>{const active=t.id===currentId;const cid=getCacheId(t);const isOff=offlineKeys.includes(cid);
-      return<div key={t.id||t.source_id||i} className={`track-row${active?' playing':''}`}
+    {!isMob&&<div className={`tbl-head tbl-head-cols`}>
+      <span>#</span><span>Title</span>
+      {showArtist&&<span className="col-artist">Artist</span>}
+      {showAlbum&&<span className="col-album">Album</span>}
+      <span>Time</span><span></span>
+    </div>}
+    {tracks.map((t,i)=>{
+      const active=t.id===currentId;const cid=cacheId(t);const isDl=offlineKeys.includes(cid);
+      return<div key={t.id||t.source_id||i} className={`tbl-row tbl-row-cols${active?' playing':''}`}
         onDoubleClick={()=>onPlay(t,i,tracks)} onClick={e=>{if(e.detail>=2)onPlay(t,i,tracks)}}
         onContextMenu={e=>{e.preventDefault();onCtx&&onCtx(e,t,i)}}>
-        <div className="tr-num">{active?<div className="tr-playing-icon"><div className="eq-bar"/><div className="eq-bar"/><div className="eq-bar"/></div>:i+1}</div>
-        <div className="tr-info">
-          <div className="tr-art"><ArtImg track={t} size={40} radius={2}/></div>
-          <div className="tr-details"><div className="tr-title">{t.title}</div>{mobile&&<div className="tr-sub">{t.artist}</div>}</div>
+        <div className="row-num">{active?<div className="eq-ani"><div className="eq-b"/><div className="eq-b"/><div className="eq-b"/></div>:i+1}</div>
+        <div className="row-info">
+          <div className="row-art"><ArtImg track={t} size={40} radius={2}/></div>
+          <div className="row-meta">
+            <div className="row-title">{t.title}</div>
+            <div className="row-artist-sm">{t.artist}</div>
+          </div>
         </div>
-        {!mobile&&<><div className="tr-text tr-col-artist">{t.artist}</div><div className="tr-text tr-col-album">{t.album}</div></>}
-        <div className="tr-dur">{fmt(t.duration)}</div>
-        <div className="tr-actions">{isOff&&<span className="tr-dl-badge" title="Downloaded">✓</span>}</div>
+        {!isMob&&showArtist&&<div className="row-text col-artist">{t.artist}</div>}
+        {!isMob&&showAlbum&&<div className="row-text col-album">{t.album}</div>}
+        <div className="row-dur">{fmt(t.duration)}</div>
+        <div className="row-actions">{isDl?<span className="row-act-btn dl" title="Downloaded">✓</span>:<span style={{width:28}}/>}</div>
       </div>;
     })}
   </div>;
 }
 
-function PlaylistPage({playlist,onPlay,onCtx,onBack,offlineKeys}){
-  const[tracks,setTracks]=useState([]);
-  useEffect(()=>{if(playlist?.id)api.get(`/api/playlists/${playlist.id}/tracks`).then(setTracks)},[playlist?.id]);
-  if(!playlist)return null;
-  const colors=['#5038a0','#1a5c3a','#1a3a5c','#5c1a1a','#5c4a1a'];
-  const color=colors[playlist.id%colors.length]||colors[0];
+// ── HomePage ──────────────────────────────────────────────────────────────────
+function HomePage({onPlay,recentlyPlayed}){
+  const[charts,setCharts]=useState([]);const[releases,setReleases]=useState([]);
+  const hr=new Date().getHours();const greet=hr<5?'Good night':hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  useEffect(()=>{api.get('/api/charts').then(setCharts).catch(()=>{});api.get('/api/releases').then(setReleases).catch(()=>{})},[]);
+  const Card=({t})=><div className="card" onClick={()=>onPlay(t,[t],0)}>
+    {t.image_url?<img src={t.image_url} className="card-art" alt="" onError={e=>e.target.style.display='none'}/>:<div className="card-art-ph">♪</div>}
+    <div className="card-title" title={t.title}>{t.title}</div>
+    <div className="card-sub">{t.artist}</div>
+    <button className="card-play" onClick={e=>{e.stopPropagation();onPlay(t,[t],0)}}>▶</button>
+  </div>;
   return<div className="page page-fade" style={{paddingTop:0}}>
-    <div className="pl-header" style={{background:`linear-gradient(135deg,${color},var(--bg))`}}>
-      <div className="pl-cover" style={{background:`linear-gradient(135deg,${color},#1a1a1a)`}}>♫</div>
-      <div className="pl-header-info">
-        <div className="pl-type">Playlist</div>
-        <div className="pl-title">{playlist.name}</div>
-        <div className="pl-sub">{tracks.length} songs · {fmt(tracks.reduce((s,t)=>s+t.duration,0))}</div>
+    <div className="hero" style={{background:'linear-gradient(135deg,#5038a0,#1a3a5c,var(--bg))'}}>
+      <div className="hero-content"><div className="hero-greeting">🌸 {greet}</div><div className="hero-sub">Welcome back to Lily</div></div>
+    </div>
+    {recentlyPlayed.length>0&&<>
+      <div className="section-h"><span>🕐 Recently Played</span></div>
+      <div className="recent-strip" style={{marginBottom:24}}>
+        {recentlyPlayed.slice(0,8).map((t,i)=><div key={t.id||t.source_id||i} className="recent-item" onClick={()=>onPlay(t,[t],0)}>
+          <div className="recent-art">{t.image_url?<img src={t.image_url} alt="" onError={e=>e.target.parentNode.style.background='var(--bg3)'}/>:'♪'}</div>
+          <div className="recent-title">{t.title}</div>
+        </div>)}
       </div>
-    </div>
-    <div className="pl-toolbar">
-      <button className="big-play-btn" onClick={()=>tracks.length&&onPlay(tracks[0],tracks,0)}>▶</button>
-      <button className="shuffle-btn" onClick={()=>{const s=[...tracks].sort(()=>Math.random()-.5);s.length&&onPlay(s[0],s,0)}}>⇌</button>
-      <button className="btn btn-outline btn-sm" style={{marginLeft:'auto'}} onClick={onBack}>← Back</button>
-    </div>
-    <TrackTable tracks={tracks} currentId={null} onPlay={(t,i,ts)=>onPlay(t,ts,i)} onCtx={onCtx} offlineKeys={offlineKeys}/>
+    </>}
+    {charts.length>0&&<><div className="section-h"><span>🔥 Trending Now</span></div><div className="cards-row">{charts.slice(0,12).map((t,i)=><Card key={t.source_id||i} t={t}/>)}</div></>}
+    {releases.length>0&&<><div className="section-h"><span>✨ New Releases</span></div><div className="cards-row">{releases.slice(0,12).map((t,i)=><Card key={t.source_id||i} t={t}/>)}</div></>}
+    {!charts.length&&!releases.length&&<div className="empty"><div className="empty-icon">🌸</div><p>Search for music or upload your own files to get started</p></div>}
   </div>;
 }
 
-function QueuePage({queue,queueIdx,onPlayIdx,onRemove,onClear}){
-  return<div className="page page-fade" style={{paddingTop:24}}>
-    <div style={{display:'flex',alignItems:'center',marginBottom:24}}>
-      <div><div style={{fontSize:28,fontWeight:900,letterSpacing:'-1px'}}>Up Next</div><div style={{fontSize:13,color:'var(--muted)',marginTop:4}}>{queue.length} tracks</div></div>
-      {queue.length>0&&<button className="btn btn-danger btn-sm" style={{marginLeft:'auto'}} onClick={onClear}>Clear queue</button>}
+// ── SearchPage ────────────────────────────────────────────────────────────────
+function SearchPage({currentTrack,onPlay,onCtx}){
+  const[q,setQ]=useState('');const[tab,setTab]=useState('saavn');
+  const[saavnR,setSaavnR]=useState([]);const[ytR,setYtR]=useState([]);
+  const[loading,setLoading]=useState({saavn:false,yt:false});const iRef=useRef();
+  useEffect(()=>{setTimeout(()=>iRef.current?.focus(),100)},[]);
+  const search=async()=>{if(!q.trim())return;setLoading({saavn:true,yt:true});setSaavnR([]);setYtR([]);
+    api.get(`/api/search/saavn?q=${encodeURIComponent(q)}`).then(r=>{setSaavnR(r);setLoading(l=>({...l,saavn:false}))}).catch(()=>setLoading(l=>({...l,saavn:false})));
+    api.get(`/api/search/youtube?q=${encodeURIComponent(q)}`).then(r=>{setYtR(r);setLoading(l=>({...l,yt:false}))}).catch(()=>setLoading(l=>({...l,yt:false})));
+  };
+  const results=tab==='saavn'?saavnR:ytR,busy=tab==='saavn'?loading.saavn:loading.yt;
+  return<div className="page page-fade" style={{paddingTop:0,display:'flex',flexDirection:'column',overflow:'hidden',height:'100%'}}>
+    <div className="s-bar-wrap">
+      <div className="s-bar">
+        <span style={{color:'#737373',fontSize:16,flexShrink:0}}>⌕</span>
+        <input ref={iRef} type="search" placeholder="Songs, artists, albums…" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==='Enter'&&search()}/>
+        <button className="btn btn-g btn-sm" style={{borderRadius:4,flexShrink:0}} onClick={search}>Search</button>
+      </div>
     </div>
-    {queue.length===0&&<div className="empty"><div className="empty-icon">≡</div><p>Queue is empty</p></div>}
-    {queue.map((t,i)=><div key={t.id||t.source_id||i} className={`queue-item${i===queueIdx?' active':''}`} onClick={()=>onPlayIdx(i)}>
-      <span className="qi-num">{i===queueIdx?'▶':i+1}</span>
-      <ArtImg track={t} size={40} radius={4}/>
-      <div className="qi-info"><div className="qi-title">{t.title}</div><div className="qi-artist">{t.artist}</div></div>
-      <span style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--muted)',marginRight:4}}>{fmt(t.duration)}</span>
-      <button className="ctrl-btn" onClick={e=>{e.stopPropagation();onRemove(i)}} style={{width:28,height:28,fontSize:12,color:'var(--muted)'}}>✕</button>
+    <div className="tabs-row">
+      <button className={`tab-btn${tab==='saavn'?' act':''}`} onClick={()=>setTab('saavn')}>🎵 JioSaavn{saavnR.length?` (${saavnR.length})`:''}</button>
+      <button className={`tab-btn${tab==='youtube'?' act':''}`} onClick={()=>setTab('youtube')}>▶ YouTube{ytR.length?` (${ytR.length})`:''}</button>
+    </div>
+    <div style={{flex:1,overflowY:'auto'}}>
+      {busy&&<div style={{textAlign:'center',padding:'56px 0',color:'var(--t2)'}}><div className="spinner" style={{margin:'0 auto 14px'}}/>Searching…</div>}
+      {!busy&&results.length===0&&q&&<div className="empty"><div className="empty-icon">🔍</div><p>No results for "{q}"</p></div>}
+      {results.map((t,i)=>{const active=currentTrack?.source_id===t.source_id;return<div key={t.source_id||i} className="tbl-row" style={{padding:'6px 12px',gridTemplateColumns:'48px 1fr auto auto',borderRadius:4,gap:12}} onClick={()=>onPlay(t,[t],0)} onContextMenu={e=>{e.preventDefault();onCtx(e,t)}}>
+        <div style={{width:48,height:48,borderRadius:4,overflow:'hidden',background:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,color:'var(--dim)',flexShrink:0}}>{t.image_url?<img src={t.image_url} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} alt="" onError={e=>e.target.style.display='none'}/>:'♪'}</div>
+        <div style={{minWidth:0}}><div className="row-title" style={active?{color:'var(--green)'}:{}}>{t.title}</div><div style={{fontSize:11,color:'var(--t2)',marginTop:2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{t.artist}{t.album&&t.album!=='YouTube'?` · ${t.album}`:''}</div></div>
+        {t.duration>0&&<span style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--t2)',flexShrink:0}}>{fmt(t.duration)}</span>}
+        <span className={`pill ${tab==='saavn'?'pill-saavn':'pill-yt'}`}>{tab==='saavn'?'Saavn':'YT'}</span>
+      </div>})}
+    </div>
+  </div>;
+}
+
+// ── LibraryPage ───────────────────────────────────────────────────────────────
+function LibraryPage({currentTrack,onPlay,onCtx,toast,offlineKeys}){
+  const[tracks,setTracks]=useState([]);const[filter,setFilter]=useState('');const[busy,setBusy]=useState(false);const[drag,setDrag]=useState(false);const fRef=useRef();const dRef=useRef();
+  const load=useCallback(()=>{api.get(`/api/tracks${filter?`?search=${encodeURIComponent(filter)}`:''}`).then(setTracks).catch(()=>{})},[filter]);
+  useEffect(()=>{load()},[load]);
+  const addFiles=async files=>{if(!files.length)return;setBusy(true);try{const r=await api.upload(Array.from(files));toast(`✓ Added ${r.added} track${r.added!==1?'s':''}`,`success`);load()}catch{toast('Upload failed','error')}finally{setBusy(false)}};
+  return<div className="page page-fade" style={{paddingTop:20}}>
+    <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:20}}>
+      <div style={{flex:1}}>
+        <div style={{fontSize:26,fontWeight:900,letterSpacing:'-1px'}}>Your Library</div>
+        <div style={{fontSize:12,color:'var(--t2)',marginTop:3}}>{tracks.length} tracks</div>
+      </div>
+      <button className="btn btn-o btn-sm" onClick={()=>fRef.current.click()}>+ Files</button>
+      <button className="btn btn-o btn-sm" onClick={()=>dRef.current.click()}>+ Folder</button>
+    </div>
+    <input ref={fRef} type="file" multiple accept=".mp3,.flac,.ogg,.opus,.m4a,.aac,.wav,.wma" style={{display:'none'}} onChange={e=>addFiles(e.target.files)}/>
+    <input ref={dRef} type="file" multiple style={{display:'none'}} onChange={e=>addFiles(e.target.files)} webkitdirectory=""/>
+    <div className={`upload-zone${busy?' busy':''}${drag?' drag':''}`}
+      onClick={()=>!busy&&fRef.current.click()} onDrop={e=>{e.preventDefault();setDrag(false);addFiles(e.dataTransfer.files)}}
+      onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)}>
+      <div style={{fontSize:36,marginBottom:10,opacity:.45}}>{busy?'⏳':'🎵'}</div>
+      {busy?<p style={{color:'var(--t2)'}}>Importing files…</p>:<p style={{color:'var(--t2)'}}>Drop audio files here or <span style={{color:'var(--green)',fontWeight:700}}>click to browse</span></p>}
+      <p style={{fontSize:11,color:'var(--dim)',marginTop:5}}>MP3 · FLAC · OGG · M4A · AAC · WAV · OPUS</p>
+    </div>
+    <div style={{position:'relative',marginBottom:18}}>
+      <span style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',color:'var(--t2)',fontSize:14}}>⌕</span>
+      <input type="text" placeholder="Filter…" value={filter} onChange={e=>setFilter(e.target.value)} style={{width:'100%',padding:'9px 14px 9px 36px',background:'var(--bg3)',border:'none',borderRadius:4,color:'var(--t1)',fontFamily:'Figtree',fontSize:13,fontWeight:500,outline:'none'}}/>
+    </div>
+    <TrackTable tracks={tracks} currentId={currentTrack?.id} onPlay={(t,i,ts)=>onPlay(t,ts,i)} onCtx={onCtx} offlineKeys={offlineKeys}/>
+  </div>;
+}
+
+// ── DownloadsPage ─────────────────────────────────────────────────────────────
+function DownloadsPage({onPlay,currentTrack}){
+  const[tracks,setTracks]=useState([]);const[loading,setLoading]=useState(true);
+  const load=()=>IDB.all().then(items=>{setTracks(items.map(it=>({...it.meta,_oid:it.id,source:'offline'})));setLoading(false)}).catch(()=>setLoading(false));
+  useEffect(()=>{load()},[]);
+  const play=async t=>{const item=await IDB.get(t._oid);if(!item)return;const url=URL.createObjectURL(item.blob);onPlay({...t,_offlineUrl:url},[{...t,_offlineUrl:url}],0)};
+  const del=async t=>{await IDB.del(t._oid);load()};
+  return<div className="page page-fade" style={{paddingTop:20}}>
+    <div style={{marginBottom:20}}>
+      <div style={{fontSize:26,fontWeight:900,letterSpacing:'-1px'}}>📥 Downloads</div>
+      <div style={{fontSize:12,color:'var(--t2)',marginTop:3}}>{tracks.length} songs saved for offline</div>
+    </div>
+    {loading&&<div style={{textAlign:'center',padding:'56px 0',color:'var(--t2)'}}><div className="spinner" style={{margin:'0 auto 14px'}}/>Loading…</div>}
+    {!loading&&tracks.length===0&&<div className="empty"><div className="empty-icon">📥</div><p>No downloads yet — right-click any song and choose "Download for Offline"</p></div>}
+    {tracks.map((t,i)=><div key={t._oid||i} className="tbl-row" style={{padding:'6px 12px',gridTemplateColumns:'48px 1fr auto auto',borderRadius:4,gap:12}} onClick={()=>play(t)}>
+      <div style={{width:48,height:48,borderRadius:4,overflow:'hidden',background:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,color:'var(--dim)',flexShrink:0}}>{t.image_url?<img src={t.image_url} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} alt=""/>:'♪'}</div>
+      <div style={{minWidth:0}}><div className="row-title">{t.title||'Unknown'}</div><div style={{fontSize:11,color:'var(--t2)',marginTop:2}}>{t.artist||'Unknown Artist'}</div></div>
+      <span className="pill pill-offline">Offline</span>
+      <button className="row-act-btn danger" style={{opacity:1}} onClick={e=>{e.stopPropagation();del(t)}} title="Remove download">✕</button>
     </div>)}
   </div>;
 }
 
+// ── PlaylistPage ──────────────────────────────────────────────────────────────
+function PlaylistPage({playlist,onPlay,onCtx,onBack,offlineKeys}){
+  const[tracks,setTracks]=useState([]);
+  useEffect(()=>{if(playlist?.id)api.get(`/api/playlists/${playlist.id}/tracks`).then(setTracks)},[playlist?.id]);
+  if(!playlist)return null;
+  const colors=['#5038a0','#1a5c3a','#1a3a5c','#5c1a1a','#4a2a5a'];
+  const color=colors[(playlist.id||0)%colors.length];
+  return<div className="page page-fade" style={{paddingTop:0}}>
+    <div className="pl-header" style={{background:`linear-gradient(135deg,${color},var(--bg) 85%)`}}>
+      <div className="pl-cover" style={{background:`linear-gradient(135deg,${color},#1a1a1a)`}}>♫</div>
+      <div className="pl-h-info">
+        <div className="pl-h-type">Playlist</div>
+        <div className="pl-h-name">{playlist.name}</div>
+        <div className="pl-h-sub">{tracks.length} songs · {fmt(tracks.reduce((s,t)=>s+(t.duration||0),0))}</div>
+      </div>
+    </div>
+    <div className="pl-toolbar">
+      <button className="big-play" onClick={()=>tracks.length&&onPlay(tracks[0],tracks,0)}>▶</button>
+      <button className="icon-btn" onClick={()=>{const s=[...tracks].sort(()=>Math.random()-.5);s.length&&onPlay(s[0],s,0)}} title="Shuffle">⇌</button>
+      <button className="btn btn-o btn-sm" style={{marginLeft:'auto'}} onClick={onBack}>← Back</button>
+    </div>
+    <TrackTable tracks={tracks} currentId={null} onPlay={(t,i,ts)=>onPlay(t,ts,i)} onCtx={onCtx} offlineKeys={offlineKeys} showArtist showAlbum/>
+  </div>;
+}
+
+// ── QueuePage ─────────────────────────────────────────────────────────────────
+function QueuePage({queue,queueIdx,onPlayIdx,onRemove,onClear}){
+  return<div className="page page-fade" style={{paddingTop:20}}>
+    <div style={{display:'flex',alignItems:'center',marginBottom:20}}>
+      <div><div style={{fontSize:26,fontWeight:900,letterSpacing:'-1px'}}>Up Next</div><div style={{fontSize:12,color:'var(--t2)',marginTop:3}}>{queue.length} tracks</div></div>
+      {queue.length>0&&<button className="btn btn-danger btn-sm" style={{marginLeft:'auto'}} onClick={onClear}>Clear</button>}
+    </div>
+    {queue.length===0&&<div className="empty"><div className="empty-icon">≡</div><p>Queue is empty</p></div>}
+    {queue.map((t,i)=><div key={t.id||t.source_id||i} className={`q-item${i===queueIdx?' act':''}`} onClick={()=>onPlayIdx(i)}>
+      <span className="q-num">{i===queueIdx?'▶':i+1}</span>
+      <ArtImg track={t} size={40} radius={4}/>
+      <div className="q-info"><div className="q-title">{t.title}</div><div className="q-artist">{t.artist}</div></div>
+      <span style={{fontFamily:'JetBrains Mono',fontSize:11,color:'var(--t2)',marginRight:4,flexShrink:0}}>{fmt(t.duration)}</span>
+      <button className="ctrl-btn" style={{width:28,height:28,fontSize:12}} onClick={e=>{e.stopPropagation();onRemove(i)}}>✕</button>
+    </div>)}
+  </div>;
+}
+
+// ── LyricsPage ────────────────────────────────────────────────────────────────
 function LyricsPage({currentTrack,position}){
   const[lyrics,setLyrics]=useState(null);const[loading,setLoading]=useState(false);const[activeIdx,setActiveIdx]=useState(-1);const aRef=useRef();
   useEffect(()=>{if(!currentTrack)return;setLyrics(null);setActiveIdx(-1);setLoading(true);const p=new URLSearchParams({title:currentTrack.title||'',artist:currentTrack.artist||'',album:currentTrack.album||'',duration:currentTrack.duration||0});api.get(`/api/lyrics?${p}`).then(r=>{setLyrics(r);setLoading(false)}).catch(()=>setLoading(false))},[currentTrack?.title,currentTrack?.artist]);
   useEffect(()=>{if(!lyrics?.has_synced)return;const ms=position*1000;let idx=-1;for(let i=0;i<lyrics.synced.length;i++){if(lyrics.synced[i].time_ms<=ms)idx=i;else break}if(idx!==activeIdx)setActiveIdx(idx)},[position,lyrics]);
   useEffect(()=>{aRef.current?.scrollIntoView({behavior:'smooth',block:'center'})},[activeIdx]);
-  return<div className="page page-fade" style={{paddingTop:24}}>
-    <div style={{marginBottom:24}}><div style={{fontSize:28,fontWeight:900,letterSpacing:'-1px'}}>Lyrics</div>{currentTrack&&<div style={{fontSize:13,color:'var(--muted)',marginTop:4}}>{currentTrack.title} — {currentTrack.artist}</div>}</div>
+  return<div className="page page-fade" style={{paddingTop:20}}>
+    <div style={{marginBottom:20}}><div style={{fontSize:26,fontWeight:900,letterSpacing:'-1px'}}>Lyrics</div>{currentTrack&&<div style={{fontSize:12,color:'var(--t2)',marginTop:3}}>{currentTrack.title} — {currentTrack.artist}</div>}</div>
     {!currentTrack&&<div className="empty"><div className="empty-icon">✦</div><p>Play a track to see lyrics</p></div>}
-    {currentTrack&&loading&&<div style={{textAlign:'center',padding:'60px 0',color:'var(--muted)'}}><div className="spinner" style={{margin:'0 auto 16px'}}/>Loading lyrics…</div>}
-    {currentTrack&&!loading&&lyrics&&!lyrics.has_any&&<div className="empty"><div className="empty-icon">📝</div><p>No lyrics found</p></div>}
-    {lyrics?.has_synced&&<div className="lyrics-wrap"><div className="lyrics-src">Synced · lrclib.net</div>{lyrics.synced.map((line,i)=>{if(!line.text)return<div key={i} className="lyric-line empty-line"/>;const d=i-activeIdx;let cls='lyric-line';if(i===activeIdx)cls+=' active';else if(Math.abs(d)===1)cls+=' near';return<div key={i} ref={i===activeIdx?aRef:null} className={cls}>{line.text}</div>})}</div>}
-    {lyrics?.has_plain&&!lyrics.has_synced&&<div className="lyrics-wrap"><div className="lyrics-src">Plain · lrclib.net</div>{lyrics.plain.split('\n').map((line,i)=><div key={i} className="lyric-line" style={{color:'var(--muted)'}}>{line||' '}</div>)}</div>}
+    {currentTrack&&loading&&<div style={{textAlign:'center',padding:'56px 0',color:'var(--t2)'}}><div className="spinner" style={{margin:'0 auto 14px'}}/>Loading lyrics…</div>}
+    {currentTrack&&!loading&&lyrics&&!lyrics.has_any&&<div className="empty"><div className="empty-icon">📝</div><p>No lyrics found for this track</p></div>}
+    {lyrics?.has_synced&&<div className="lyr-wrap"><div className="lyr-src">Synced · lrclib.net</div>{lyrics.synced.map((line,i)=>{if(!line.text)return<div key={i} className="lyr-line emp"/>;const d=i-activeIdx;let cls='lyr-line';if(i===activeIdx)cls+=' act';else if(Math.abs(d)===1)cls+=' near';return<div key={i} ref={i===activeIdx?aRef:null} className={cls}>{line.text}</div>})}</div>}
+    {lyrics?.has_plain&&!lyrics.has_synced&&<div className="lyr-wrap"><div className="lyr-src">Plain · lrclib.net</div>{lyrics.plain.split('\n').map((line,i)=><div key={i} className="lyr-line" style={{color:'var(--t2)'}}>{line||' '}</div>)}</div>}
   </div>;
 }
 
+// ── Sidebar ───────────────────────────────────────────────────────────────────
 function Sidebar({view,onNav,playlists,onPlaylist,onNewPlaylist,onAddFiles,selectedPl,isOnline}){
-  const fileRef=useRef(),folderRef=useRef();
-  return<div className="sidebar-wrap">
-    <div className="sidebar-nav">
-      <div className="logo">
-        <svg width="28" height="28" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#1DB954"/><text x="50" y="70" textAnchor="middle" fontSize="60">🌸</text></svg>
-        Lily
-        {!isOnline&&<span style={{marginLeft:'auto',fontSize:9,fontWeight:800,padding:'2px 8px',borderRadius:10,background:'var(--red)',color:'#fff',letterSpacing:1}}>OFFLINE</span>}
+  const fRef=useRef(),dRef=useRef();
+  return<div className="sidebar">
+    <div className="sidebar-top">
+      <div className="s-logo">
+        <div className="logo-icon">🌸</div>
+        Lily Music
+        {!isOnline&&<span style={{marginLeft:'auto',fontSize:9,fontWeight:800,padding:'2px 7px',borderRadius:10,background:'var(--red)',color:'#fff',letterSpacing:.8}}>OFFLINE</span>}
       </div>
-      {[['home','⌂','Home'],['search','⌕','Search'],['downloads','↓','Downloads']].map(([v,icon,lbl])=>(
-        <button key={v} className={`nav-link${view===v?' active':''}`} onClick={()=>onNav(v)}><span className="nav-icon">{icon}</span>{lbl}</button>
+      {[['home','⌂','Home'],['search','⌕','Search'],['downloads','↓','Downloads']].map(([v,ico,lbl])=>(
+        <button key={v} className={`s-nav-btn${view===v?' act':''}`} onClick={()=>onNav(v)}><span className="ico">{ico}</span>{lbl}</button>
       ))}
     </div>
     <div className="sidebar-lib">
-      <div className="lib-header"><div className="lib-label"><span style={{fontSize:16}}>♫</span> Your Library</div><button className="lib-btn" onClick={onNewPlaylist}>+</button></div>
-      <div className="playlist-list">
-        <div className="pl-item" onClick={()=>onNav('library')}>
-          <div className="pl-icon" style={{background:'linear-gradient(135deg,#450af5,#c4efd9)'}}>♪</div>
-          <div className="pl-info"><div className="pl-name">Library</div><div className="pl-meta">All tracks</div></div>
+      <div className="lib-hd">
+        <div className="lib-hd-label"><span style={{fontSize:16}}>♫</span> Your Library</div>
+        <button className="lib-add-btn" onClick={onNewPlaylist} title="New Playlist">+</button>
+      </div>
+      <div className="lib-list">
+        <div className="lib-item" onClick={()=>onNav('library')}>
+          <div className="lib-icon" style={{background:'linear-gradient(135deg,#450af5,#c4efd9)'}}>♪</div>
+          <div className="lib-item-info"><div className="lib-item-name">Library</div><div className="lib-item-meta">All tracks</div></div>
         </div>
         {playlists.map(p=>(
-          <div key={p.id} className={`pl-item${selectedPl===p.id?' active':''}`} onClick={()=>onPlaylist(p)}>
-            <div className="pl-icon" style={{background:'linear-gradient(135deg,#1a3050,#2a5080)'}}>♫</div>
-            <div className="pl-info"><div className="pl-name">{p.name}</div><div className="pl-meta">Playlist · {p.track_count||0} songs</div></div>
+          <div key={p.id} className={`lib-item${selectedPl===p.id?' act':''}`} onClick={()=>onPlaylist(p)}>
+            <div className="lib-icon" style={{background:'linear-gradient(135deg,#1a3050,#2a5080)'}}>♫</div>
+            <div className="lib-item-info"><div className="lib-item-name">{p.name}</div><div className="lib-item-meta">Playlist · {p.track_count||0}</div></div>
           </div>
         ))}
       </div>
-      <div className="sidebar-add-btns">
-        <input ref={fileRef} type="file" multiple accept=".mp3,.flac,.ogg,.opus,.m4a,.aac,.wav,.wma" style={{display:'none'}} onChange={e=>onAddFiles(e.target.files)}/>
-        <input ref={folderRef} type="file" multiple style={{display:'none'}} onChange={e=>onAddFiles(e.target.files)} webkitdirectory=""/>
-        <button className="sidebar-add-btn" onClick={()=>fileRef.current.click()}>+ Files</button>
-        <button className="sidebar-add-btn" onClick={()=>folderRef.current.click()}>+ Folder</button>
+      <div className="sidebar-btns">
+        <input ref={fRef} type="file" multiple accept=".mp3,.flac,.ogg,.opus,.m4a,.aac,.wav,.wma" style={{display:'none'}} onChange={e=>onAddFiles(e.target.files)}/>
+        <input ref={dRef} type="file" multiple style={{display:'none'}} onChange={e=>onAddFiles(e.target.files)} webkitdirectory=""/>
+        <button className="s-add-btn" onClick={()=>fRef.current.click()}>+ Files</button>
+        <button className="s-add-btn" onClick={()=>dRef.current.click()}>+ Folder</button>
       </div>
     </div>
   </div>;
 }
 
-const BottomNav=({view,onNav})=><div className="bottom-nav">
-  <div className="bn-inner">
-    {[['home','⌂','Home'],['search','⌕','Search'],['library','♪','Library'],['downloads','↓','Saved'],['lyrics','✦','Lyrics']].map(([v,icon,lbl])=>(
-      <button key={v} className={`bn-btn${view===v?' active':''}`} onClick={()=>onNav(v)}><span className="bn-icon">{icon}</span>{lbl}</button>
+// ── Bottom Nav ────────────────────────────────────────────────────────────────
+const BottomNav=({view,onNav})=><div className="bnav">
+  <div className="bnav-inner">
+    {[['home','⌂','Home'],['search','⌕','Search'],['library','♪','Library'],['downloads','↓','Saved'],['lyrics','✦','Lyrics']].map(([v,ico,lbl])=>(
+      <button key={v} className={`bnav-btn${view===v?' act':''}`} onClick={()=>onNav(v)}>
+        <span className="bi">{ico}</span>{lbl}
+      </button>
     ))}
   </div>
 </div>;
 
-function PlayerBar({track,isPlaying,position,duration,volume,shuffle,repeat,onToggle,onPrev,onNext,onSeek,onVolume,onShuffle,onRepeat,loading,onQueueClick,onLyricsClick}){
-  const pct=duration>0?position/duration:0;
+// ── Desktop Player ────────────────────────────────────────────────────────────
+function PlayerBar({track,isPlaying,pos,dur,vol,shuffle,repeat,sleepMins,onToggle,onPrev,onNext,onSeek,onVol,onShuffle,onRepeat,loading,onQueue,onLyrics,onSleep,onExpand}){
+  const pct=dur>0?pos/dur:0;
   return<div className="player-bar">
-    <div className="now-playing">
-      <div className="np-art"><ArtImg track={track} size={56} radius={4}/></div>
-      {track&&<><div className="np-info"><div className="np-title">{track.title||'Unknown'}</div><div className="np-artist">{track.artist||''}</div></div><button className="np-like">♡</button></>}
+    <div className="np">
+      <div className="np-art-wrap" onClick={onExpand}><ArtImg track={track} size={56} radius={4}/></div>
+      {track&&<><div className="np-info">
+        <div className="np-title" onClick={onLyrics}>{track.title||'Unknown'}</div>
+        <div className="np-artist">{track.artist||''}</div>
+      </div><button className="np-heart">♡</button></>}
     </div>
-    <div className="center-ctrl">
+    <div className="ctrl-center">
       <div className="ctrl-row">
-        <button className={`ctrl-btn${shuffle?' active':''}`} onClick={onShuffle} style={{fontSize:14}}>⇌</button>
+        <button className={`ctrl-btn${shuffle?' act':''}`} onClick={onShuffle} style={{fontSize:14}}>⇌</button>
         <button className="ctrl-btn" onClick={onPrev} style={{fontSize:20}}>⏮</button>
         <button className="play-btn" onClick={onToggle} disabled={loading}>
           {loading?<div className="spinner" style={{width:14,height:14}}/>:(isPlaying?<span style={{fontSize:11}}>⏸</span>:<span style={{marginLeft:2,fontSize:12}}>▶</span>)}
         </button>
         <button className="ctrl-btn" onClick={onNext} style={{fontSize:20}}>⏭</button>
-        <button className={`ctrl-btn${repeat?' active':''}`} onClick={onRepeat} style={{fontSize:15}}>↻</button>
+        <button className={`ctrl-btn${repeat?' act':''}`} onClick={onRepeat} style={{fontSize:14}}>↻</button>
       </div>
       <div className="prog-row">
-        <span className="prog-time">{fmt(position)}</span>
-        <Slider value={pct} onSeek={f=>onSeek(f)} trackClass="prog-track" bgClass="prog-bg" fillClass="prog-fill" handleClass="prog-handle"/>
-        <span className="prog-time right">{fmt(duration)}</span>
+        <span className="prog-t">{fmt(pos)}</span>
+        <Slider value={pct} onSeek={(f,commit)=>onSeek(f,commit)} trackCls="prog-track" bgCls="prog-bg" fillCls="prog-fill" dotCls="prog-dot"/>
+        <span className="prog-t r">{fmt(dur)}</span>
       </div>
     </div>
     <div className="right-ctrl">
-      <button className="ctrl-btn" onClick={onLyricsClick} style={{fontSize:13}}>✦</button>
-      <button className="ctrl-btn" onClick={onQueueClick} style={{fontSize:15}}>≡</button>
-      <div className="vol-wrap">
-        <span style={{color:'var(--muted)',fontSize:14}}>🔊</span>
-        <Slider value={volume} onSeek={onVolume} trackClass="vol-track" bgClass="vol-bg" fillClass="vol-fill" handleClass="prog-handle"/>
+      {sleepMins&&<span className="sleep-badge">{sleepMins}m</span>}
+      <button className="ctrl-btn" onClick={onSleep} title="Sleep Timer" style={{fontSize:14}}>⏱</button>
+      <button className="ctrl-btn" onClick={onLyrics} style={{fontSize:13}}>✦</button>
+      <button className="ctrl-btn" onClick={onQueue} style={{fontSize:15}}>≡</button>
+      <div className="vol-row">
+        <span className="vol-ico">🔊</span>
+        <Slider value={vol} onSeek={(f)=>onVol(f)} trackCls="vol-track" bgCls="vol-bg" fillCls="vol-fill"/>
       </div>
     </div>
   </div>;
 }
 
-function MobilePlayer({track,isPlaying,position,duration,onToggle,onPrev,onNext,onSeek,loading}){
-  const pct=duration>0?position/duration:0;
-  if(!track)return<div className="mobile-player" style={{height:3}}><div className="mob-prog"><div className="mob-prog-fill" style={{width:'0%'}}/></div></div>;
-  return<div className="mobile-player">
-    <div className="mob-prog" onClick={e=>{const r=e.currentTarget.getBoundingClientRect();onSeek(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)))}}>
-      <div className="mob-prog-fill" style={{width:`${pct*100}%`}}/>
-    </div>
-    <div className="mob-bar">
-      <div className="mob-art"><ArtImg track={track} size={48} radius={4}/></div>
+// ── Mobile Player ─────────────────────────────────────────────────────────────
+function MobilePlayer({track,isPlaying,pos,dur,onToggle,onPrev,onNext,onSeek,loading,onExpand}){
+  const pct=dur>0?pos/dur:0;
+  if(!track)return<div className="mob-player" style={{height:3}}><div className="mob-prog"><div className="mob-prog-fill" style={{width:'0%'}}/></div></div>;
+  const handleProg=e=>{const r=e.currentTarget.getBoundingClientRect();onSeek(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),true)};
+  return<div className="mob-player">
+    <div className="mob-prog" onClick={handleProg}><div className="mob-prog-fill" style={{width:`${pct*100}%`}}/></div>
+    <div className="mob-bar" onClick={onExpand}>
+      <div className="mob-art"><ArtImg track={track} size={46} radius={4}/></div>
       <div className="mob-info"><div className="mob-title">{track.title}</div><div className="mob-artist">{track.artist}</div></div>
-      <div className="mob-btns">
-        <button className="mob-btn" onClick={onPrev}>⏮</button>
-        <button className="mob-play-btn" onClick={onToggle} disabled={loading}>{loading?<div className="spinner" style={{width:16,height:16}}/>:(isPlaying?'⏸':'▶')}</button>
-        <button className="mob-btn" onClick={onNext}>⏭</button>
+      <div className="mob-btns" onClick={e=>e.stopPropagation()}>
+        <button className="mob-ctrl" onClick={onPrev}>⏮</button>
+        <button className="mob-play" onClick={onToggle} disabled={loading}>{loading?<div className="spinner" style={{width:16,height:16}}/>:(isPlaying?'⏸':'▶')}</button>
+        <button className="mob-ctrl" onClick={onNext}>⏭</button>
       </div>
     </div>
   </div>;
 }
 
+// ── Expanded Player (mobile full-screen) ──────────────────────────────────────
+function ExpandedPlayer({track,isPlaying,pos,dur,vol,shuffle,repeat,loading,sleepMins,onClose,onToggle,onPrev,onNext,onSeek,onVol,onShuffle,onRepeat,onSleep,onDownload,onShare,onLyrics,isDownloaded}){
+  const pct=dur>0?pos/dur:0;
+  const artUrl=track?.source==='local'&&track?.id?`/api/artwork/${track.id}`:(track?.image_url||null);
+  const bg=artUrl?`url(${artUrl})`:'linear-gradient(135deg,#5038a0,#121212)';
+  return<div className={`exp-player${track?' open':'closed'}`}>
+    <div className="exp-bg">
+      {artUrl&&<div style={{position:'absolute',inset:0,backgroundImage:bg,backgroundSize:'cover',backgroundPosition:'center',filter:'blur(60px) brightness(.4)',transform:'scale(1.1)'}}/>}
+      <div className="exp-bg-blur"/>
+    </div>
+    <div className="exp-header">
+      <button className="exp-down-btn" onClick={onClose}>⌄</button>
+      <div className="exp-title-area"><div className="exp-context">Now Playing</div></div>
+      <button className="exp-more-btn" onClick={onSleep}>⏱</button>
+    </div>
+    <div className="exp-art-wrap">
+      <div className="exp-art">{artUrl?<img src={artUrl} style={{width:'100%',height:'100%',objectFit:'cover',display:'block'}} alt=""/>:'♪'}</div>
+    </div>
+    <div className="exp-info">
+      <div className="exp-track-title">{track?.title||'Nothing playing'}</div>
+      <div className="exp-track-artist">{track?.artist||''}</div>
+    </div>
+    <div className="exp-prog">
+      <div className="exp-prog-track" onMouseDown={e=>{const r=e.currentTarget.getBoundingClientRect();onSeek(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),true)}} onTouchEnd={e=>{e.preventDefault();const r=e.currentTarget.getBoundingClientRect();const t=e.changedTouches[0];onSeek(Math.max(0,Math.min(1,(t.clientX-r.left)/r.width)),true)}}>
+        <div className="exp-prog-bg"><div className="exp-prog-fill" style={{width:`${pct*100}%`}}/></div>
+      </div>
+      <div className="exp-prog-times"><span>{fmt(pos)}</span><span>{fmt(dur)}</span></div>
+    </div>
+    <div className="exp-ctrl">
+      <button className={`exp-btn${shuffle?' act':''}`} onClick={onShuffle}>⇌</button>
+      <button className="exp-btn" onClick={onPrev}>⏮</button>
+      <button className="exp-play" onClick={onToggle} disabled={loading}>{loading?<div className="spinner" style={{width:24,height:24}}/>:(isPlaying?'⏸':'▶')}</button>
+      <button className="exp-btn" onClick={onNext}>⏭</button>
+      <button className={`exp-btn${repeat?' act':''}`} onClick={onRepeat}>↻</button>
+    </div>
+    <div className="exp-extra">
+      <button className="exp-extra-btn" onClick={onLyrics}><span>✦</span><span>Lyrics</span></button>
+      <button className={`exp-extra-btn${isDownloaded?' act':''}`} onClick={onDownload}><span>↓</span><span>{isDownloaded?'Saved':'Save'}</span></button>
+      {navigator.share&&<button className="exp-extra-btn" onClick={onShare}><span>↗</span><span>Share</span></button>}
+      {sleepMins&&<div style={{textAlign:'center'}}><div style={{fontSize:11,color:'var(--green)',fontFamily:'JetBrains Mono',fontWeight:700}}>{sleepMins}m</div><div style={{fontSize:9,color:'var(--t2)',letterSpacing:.5}}>SLEEP</div></div>}
+    </div>
+  </div>;
+}
+
+// ── APP ───────────────────────────────────────────────────────────────────────
 function App(){
   const[view,setView]=useState('home');
   const[playlists,setPlaylists]=useState([]);
@@ -681,10 +944,18 @@ function App(){
   const[plPicker,setPlPicker]=useState(null);
   const[folderName,setFolderName]=useState(null);
   const[showFolderModal,setShowFolderModal]=useState(false);
+  const[showSleepModal,setShowSleepModal]=useState(false);
   const[offlineKeys,setOfflineKeys]=useState([]);
   const[downloading,setDownloading]=useState(null);
-  const isOnline=useIsOnline();
+  const[dlPct,setDlPct]=useState(0);
+  const[expanded,setExpanded]=useState(false);
+  const[recentlyPlayed,setRecentlyPlayed]=useState([]);
+  const[sleepMins,setSleepMins]=useState(null);
+  const sleepTimerRef=useRef(null);
+  const isOnline=useOnline();
+  const isMobile=useMobile();
 
+  // ── Audio element ──────────────────────────────────────────────────────────
   const audioRef=useRef(null);
   if(!audioRef.current){const a=new Audio();a.className='_lily';a.preload='auto';document.body.appendChild(a);audioRef.current=a}
 
@@ -699,55 +970,72 @@ function App(){
   const[queue,setQueue]=useState([]);
   const[queueIdx,setQueueIdx]=useState(-1);
   const playNextRef=useRef(null);
-  const blobUrlRef=useRef(null);
+  const blobRef=useRef(null);
 
-  const refreshOfflineKeys=useCallback(async()=>{try{const k=await IDB.allKeys();setOfflineKeys(k)}catch(e){}},[]);
-  useEffect(()=>{refreshOfflineKeys()},[]);
-  useEffect(()=>{IDB.getSetting('folderName').then(n=>{if(n)setFolderName(n)}).catch(()=>{})},[]);
+  // ── Init ───────────────────────────────────────────────────────────────────
+  const refreshKeys=useCallback(async()=>{try{setOfflineKeys(await IDB.allKeys())}catch{}},[]);
+  useEffect(()=>{refreshKeys();IDB.getSetting('folderName').then(n=>{if(n)setFolderName(n)}).catch(()=>{});
+    // Load recently played
+    try{const r=JSON.parse(localStorage.getItem('lily-recent')||'[]');setRecentlyPlayed(r)}catch{}
+  },[]);
 
+  // ── Audio event wiring ─────────────────────────────────────────────────────
   useEffect(()=>{
     const a=audioRef.current;a.volume=volume;
-    const onTime=()=>{setPosition(a.currentTime);setMSPos(a.currentTime,a.duration)};
-    const onDur=()=>setDuration(a.duration||0);
-    const onEnded=()=>{if(playNextRef.current)playNextRef.current()};
-    const onPlay=()=>{setIsPlaying(true);setMSState(true)};
-    const onPause=()=>{setIsPlaying(false);setMSState(false)};
-    a.addEventListener('timeupdate',onTime);a.addEventListener('loadedmetadata',onDur);a.addEventListener('durationchange',onDur);a.addEventListener('ended',onEnded);a.addEventListener('play',onPlay);a.addEventListener('pause',onPause);
-    return()=>{a.removeEventListener('timeupdate',onTime);a.removeEventListener('loadedmetadata',onDur);a.removeEventListener('durationchange',onDur);a.removeEventListener('ended',onEnded);a.removeEventListener('play',onPlay);a.removeEventListener('pause',onPause)};
+    const tUpdate=()=>{setPosition(a.currentTime);setMSPos(a.currentTime,a.duration)};
+    const durChange=()=>setDuration(a.duration||0);
+    const ended=()=>{if(playNextRef.current)playNextRef.current()};
+    const onP=()=>{setIsPlaying(true);setMSState(true)};
+    const onPs=()=>{setIsPlaying(false);setMSState(false)};
+    a.addEventListener('timeupdate',tUpdate);a.addEventListener('loadedmetadata',durChange);a.addEventListener('durationchange',durChange);a.addEventListener('ended',ended);a.addEventListener('play',onP);a.addEventListener('pause',onPs);
+    return()=>{a.removeEventListener('timeupdate',tUpdate);a.removeEventListener('loadedmetadata',durChange);a.removeEventListener('durationchange',durChange);a.removeEventListener('ended',ended);a.removeEventListener('play',onP);a.removeEventListener('pause',onPs)};
   },[]);
   useEffect(()=>{audioRef.current.volume=volume},[volume]);
 
   const loadPlaylists=()=>api.get('/api/playlists').then(setPlaylists).catch(()=>{});
   useEffect(()=>{loadPlaylists()},[]);
+
   const toast=useCallback((msg,type='success')=>{const id=Date.now();setToasts(t=>[...t,{id,msg,type}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),3500)},[]);
 
+  // ── Recently Played ────────────────────────────────────────────────────────
+  const addRecent=useCallback(track=>{setRecentlyPlayed(prev=>{const next=[track,...prev.filter(t=>t.id!==track.id&&t.source_id!==track.source_id)].slice(0,20);try{localStorage.setItem('lily-recent',JSON.stringify(next))}catch{}return next})},[]);
+
+  // ── Sleep Timer ────────────────────────────────────────────────────────────
+  const setSleepTimer=useCallback(mins=>{
+    if(sleepTimerRef.current){clearTimeout(sleepTimerRef.current);sleepTimerRef.current=null}
+    setSleepMins(mins);
+    if(mins){sleepTimerRef.current=setTimeout(()=>{audioRef.current.pause();setSleepMins(null);toast('😴 Sleep timer — music stopped','info')},mins*60*1000)}
+  },[toast]);
+
+  // ── Start Track ────────────────────────────────────────────────────────────
   const startTrack=useCallback(async(track,q=null,idx=0)=>{
     setLoading(true);if(q){setQueue(q);setQueueIdx(idx)}
     setCurrentTrack(track);setPosition(0);setDuration(0);
     const a=audioRef.current;
-    if(blobUrlRef.current){URL.revokeObjectURL(blobUrlRef.current);blobUrlRef.current=null}
+    if(blobRef.current){URL.revokeObjectURL(blobRef.current);blobRef.current=null}
+    addRecent(track);
     try{
       let url;
       if(track._offlineUrl){url=track._offlineUrl}
       else{
-        const cid=getCacheId(track);
+        const cid=cacheId(track);
         const cached=await IDB.get(cid).catch(()=>null);
-        if(cached){url=URL.createObjectURL(cached.blob);blobUrlRef.current=url}
+        if(cached){url=URL.createObjectURL(cached.blob);blobRef.current=url}
         else if(!navigator.onLine){toast('Not available offline','error');setLoading(false);return}
         else if(track.source==='local')url=`/api/stream/${track.id}`;
-        else if(track.source==='saavn'){let ru=`/api/resolve/saavn/${encodeURIComponent(track.source_id)}`;if(track.stream_url)ru+=`?stream_url=${encodeURIComponent(track.stream_url)}`;const r=await api.get(ru);url=r.url;if(!url)throw new Error('No Saavn URL')}
-        else if(track.source==='youtube'){const r=await api.get(`/api/resolve/youtube/${encodeURIComponent(track.source_id)}`);url=r.url;if(!url)throw new Error('No YouTube URL')}
+        else if(track.source==='saavn'){let ru=`/api/resolve/saavn/${encodeURIComponent(track.source_id)}`;if(track.stream_url)ru+=`?stream_url=${encodeURIComponent(track.stream_url)}`;const r=await api.get(ru);url=r.url;if(!url)throw new Error('No URL')}
+        else if(track.source==='youtube'){const r=await api.get(`/api/resolve/youtube/${encodeURIComponent(track.source_id)}`);url=r.url;if(!url)throw new Error('No URL')}
       }
       a.src=url;a.load();await a.play();
       const artUrl=track.source==='local'&&track.id?`/api/artwork/${track.id}`:(track.image_url||null);
-      setMediaSession(track,artUrl,{play:()=>a.play(),pause:()=>a.pause(),previoustrack:()=>{if(playNextRef._prev)playNextRef._prev()},nexttrack:()=>{if(playNextRef.current)playNextRef.current()},seekto:d=>{a.currentTime=d.seekTime??a.currentTime}});
+      setMS(track,artUrl,{play:()=>a.play(),pause:()=>a.pause(),prev:()=>{if(playNextRef._prev)playNextRef._prev()},next:()=>{if(playNextRef.current)playNextRef.current()},seekto:d=>{a.currentTime=d.seekTime??a.currentTime}});
     }catch(e){toast(`Playback failed: ${e.message}`,'error');setIsPlaying(false)}
     setLoading(false);
-  },[toast]);
+  },[toast,addRecent]);
 
   const playNext=useCallback(()=>{
     setRepeat(rpt=>{if(rpt){audioRef.current.currentTime=0;audioRef.current.play().catch(()=>{});return rpt}
-      setQueue(q=>{setQueueIdx(i=>{if(!q.length)return i;const next=shuffle?Math.floor(Math.random()*q.length):(i+1)%q.length;startTrack(q[next],q,next);return next});return q});return rpt});
+      setQueue(q=>{setQueueIdx(i=>{if(!q.length)return i;const nxt=shuffle?Math.floor(Math.random()*q.length):(i+1)%q.length;startTrack(q[nxt],q,nxt);return nxt});return q});return rpt});
   },[shuffle,startTrack]);
   useEffect(()=>{playNextRef.current=playNext},[playNext]);
 
@@ -758,98 +1046,124 @@ function App(){
   useEffect(()=>{playNextRef._prev=playPrev},[playPrev]);
 
   const togglePlay=useCallback(()=>{const a=audioRef.current;if(!a.src&&queue.length){startTrack(queue[Math.max(0,queueIdx)],queue,Math.max(0,queueIdx));return}if(a.paused)a.play().catch(()=>{});else a.pause()},[queue,queueIdx,startTrack]);
-  const onPlay=useCallback((track,tracks=null,idx=0)=>{const q=tracks||[track],i=tracks?idx:0;setQueue(q);setQueueIdx(i);startTrack(track,q,i)},[startTrack]);
+  const onPlay=useCallback((track,tracks=null,idx=0)=>{const q=tracks||[track];setQueue(q);setQueueIdx(tracks?idx:0);startTrack(track,q,tracks?idx:0)},[startTrack]);
+  const seek=useCallback((f,commit)=>{const t=f*duration;if(commit){audioRef.current.currentTime=t;setPosition(t)}else setPosition(t)},[duration]);
   const setVol=v=>{setVolume(v);audioRef.current.volume=v};
-  const seek=f=>{audioRef.current.currentTime=f*duration;setPosition(f*duration)};
 
+  // ── Download ───────────────────────────────────────────────────────────────
   const _doDownload=useCallback(async track=>{
-    setDownloading({title:track.title||'Track',pct:0});
-    try{
-      await downloadTrackToCache(track,pct=>setDownloading(d=>({...d,pct})));
-      toast(`✓ "${track.title}" saved offline`,'success');await refreshOfflineKeys();
-    }catch(e){toast(`Download failed: ${e.message}`,'error')}
+    setDownloading(track.title||'Track');setDlPct(0);
+    try{await downloadTrack(track,p=>setDlPct(p));toast(`✓ "${track.title}" saved offline`,'success');await refreshKeys()}
+    catch(e){toast(`Download failed: ${e.message}`,'error')}
     setDownloading(null);
-  },[toast,refreshOfflineKeys]);
+  },[toast,refreshKeys]);
 
   const handleDownload=useCallback(async track=>{
-    const cid=getCacheId(track);
-    const ex=await IDB.get(cid).catch(()=>null);
-    if(ex){toast('Already downloaded','info');return}
-    if(!FolderMgr.hasFolder()&&window.showDirectoryPicker){window._pendingDl=track;setShowFolderModal(true);return}
+    const cid=cacheId(track);if(offlineKeys.includes(cid)){toast('Already downloaded','info');return}
+    if(!FolderMgr.has()&&window.showDirectoryPicker){window._pdl=track;setShowFolderModal(true);return}
     _doDownload(track);
-  },[toast,_doDownload]);
+  },[offlineKeys,toast,_doDownload]);
 
-  const onGrantFolder=useCallback(async()=>{
-    setShowFolderModal(false);
-    try{const h=await FolderMgr.requestFolder();if(h){setFolderName(h.name);toast(`📁 Downloads folder set: ${h.name}`,'success')}}catch(e){toast('Folder access denied','error')}
-    if(window._pendingDl){const t=window._pendingDl;window._pendingDl=null;_doDownload(t)}
-  },[toast,_doDownload]);
-  const onSkipFolder=useCallback(()=>{setShowFolderModal(false);if(window._pendingDl){const t=window._pendingDl;window._pendingDl=null;_doDownload(t)}},[_doDownload]);
+  const onGrantFolder=useCallback(async()=>{setShowFolderModal(false);try{const h=await FolderMgr.request();if(h){setFolderName(h.name);toast(`📁 Folder: ${h.name}`,'success')}}catch{toast('Folder access denied','error')}if(window._pdl){const t=window._pdl;window._pdl=null;_doDownload(t)}},[toast,_doDownload]);
+  const onSkipFolder=useCallback(()=>{setShowFolderModal(false);if(window._pdl){const t=window._pdl;window._pdl=null;_doDownload(t)}},[_doDownload]);
 
+  // ── Share ──────────────────────────────────────────────────────────────────
+  const shareTrack=useCallback(async track=>{
+    if(navigator.share){try{await navigator.share({title:track.title,text:`${track.title} by ${track.artist} — via Lily Music 🌸`});return}catch{}}
+    // Fallback: copy to clipboard
+    try{await navigator.clipboard.writeText(`${track.title} by ${track.artist}`);toast('Copied to clipboard','success')}catch{toast('Share not available','error')}
+  },[toast]);
+
+  // ── Context Menu ───────────────────────────────────────────────────────────
   const showCtx=useCallback((e,track)=>{
     e.preventDefault();
-    const cid=getCacheId(track);const isDl=offlineKeys.includes(cid);
+    const cid=cacheId(track);const isDl=offlineKeys.includes(cid);
     const items=[
-      {label:'▶ Play Now',action:()=>onPlay(track)},
-      {label:'+ Add to Queue',action:()=>setQueue(q=>{const nq=[...q,track];if(nq.length===1)startTrack(track,nq,0);return nq})},
+      {icon:'▶',label:'Play Now',action:()=>onPlay(track)},
+      {icon:'≡',label:'Add to Queue',action:()=>setQueue(q=>{const nq=[...q,track];if(nq.length===1)startTrack(track,nq,0);toast('Added to queue');return nq})},
       null,
-      {label:isDl?'✓ Downloaded':'↓ Download for Offline',accent:!isDl,action:()=>handleDownload(track)},
-      isDl?{label:'✗ Remove Download',danger:true,action:async()=>{await IDB.del(cid);await refreshOfflineKeys();toast('Removed from downloads')}}:null,
+      isDl?{icon:'✓',label:'Downloaded',accent:true,action:()=>{}}:{icon:'↓',label:'Download for Offline',accent:true,action:()=>handleDownload(track)},
+      isDl?{icon:'✕',label:'Remove Download',danger:true,action:async()=>{await IDB.del(cid);await refreshKeys();toast('Removed download')}}:null,
       null,
-      {label:'Add to Playlist',action:()=>setPlPicker(track)},
-      track.source==='local'?{label:'Delete from Library',danger:true,action:async()=>{await api.del(`/api/tracks/${track.id}`);toast('Deleted','success')}}:null,
+      {icon:'♫',label:'Add to Playlist',action:()=>setPlPicker(track)},
+      navigator.share||navigator.clipboard?{icon:'↗',label:'Share',action:()=>shareTrack(track)}:null,
+      track.source==='local'?{icon:'🗑',label:'Delete from Library',danger:true,action:async()=>{await api.del(`/api/tracks/${track.id}`);toast('Deleted')}}:null,
     ].filter(Boolean);
     setCtxMenu({x:e.clientX,y:e.clientY,items});
-  },[onPlay,offlineKeys,handleDownload,refreshOfflineKeys,toast,startTrack]);
+  },[onPlay,offlineKeys,handleDownload,refreshKeys,toast,startTrack,shareTrack]);
 
-  const createPlaylist=name=>{api.post('/api/playlists',{name}).then(()=>{loadPlaylists();toast(`Playlist created`);setModal(null)})};
+  const createPlaylist=name=>{api.post('/api/playlists',{name}).then(()=>{loadPlaylists();toast(`✓ Playlist created`);setModal(null)})};
   const addToPlaylist=async plId=>{if(!plPicker)return;await api.post(`/api/playlists/${plId}/tracks`,{track_id:plPicker.id});toast('Added to playlist');setPlPicker(null);loadPlaylists()};
   const handleAddFiles=async files=>{if(!files.length)return;try{const r=await api.upload(Array.from(files));toast(`✓ Added ${r.added} track${r.added!==1?'s':''}`,'success')}catch{toast('Upload failed','error')}};
   const nav=v=>{setView(v);setSelectedPl(null)};
 
-  return<div className="app" onClick={()=>setCtxMenu(null)}>
-    <Sidebar view={view} onNav={nav} playlists={playlists} selectedPl={selectedPl}
-      onPlaylist={p=>{setSelectedPl(p.id);setView('playlist')}} onNewPlaylist={()=>setModal({type:'create'})}
-      onAddFiles={handleAddFiles} isOnline={isOnline}/>
-    <div className="main-wrap">
-      <div className="topbar">
-        <div style={{display:'flex',gap:4}}>
-          <button className="topbar-nav-btn" onClick={()=>window.history.back()}>‹</button>
-          <button className="topbar-nav-btn" onClick={()=>window.history.forward()}>›</button>
+  const isTrackDownloaded=currentTrack&&offlineKeys.includes(cacheId(currentTrack));
+
+  return<div id="root-app" className="app" onClick={()=>setCtxMenu(null)}>
+    <div className="app-body">
+      <Sidebar view={view} onNav={nav} playlists={playlists} selectedPl={selectedPl}
+        onPlaylist={p=>{setSelectedPl(p.id);setView('playlist')}} onNewPlaylist={()=>setModal({type:'create'})}
+        onAddFiles={handleAddFiles} isOnline={isOnline}/>
+      <div className="main">
+        <div className="topbar">
+          <div className="topbar-nav">
+            <button className="t-nav-btn" onClick={()=>window.history.back()}>‹</button>
+            <button className="t-nav-btn" onClick={()=>window.history.forward()}>›</button>
+          </div>
+          <div className="topbar-right">
+            {!isOnline&&<span className="offline-pill">OFFLINE</span>}
+            <button className={`folder-btn${folderName?' set':''}`} onClick={async()=>{if(!window.showDirectoryPicker){toast('Not supported in this browser','error');return}const h=await FolderMgr.request();if(h){setFolderName(h.name);toast(`📁 ${h.name}`,'success')}}}>
+              {folderName?`📂 ${folderName}`:'📁 Download Folder'}
+            </button>
+          </div>
         </div>
-        <div style={{flex:1}}/>
-        {!isOnline&&<span className="offline-badge">OFFLINE MODE</span>}
-        <button className={`folder-btn${folderName?' set':''}`} onClick={async()=>{if(!window.showDirectoryPicker){toast('Not supported in this browser','error');return}const h=await FolderMgr.requestFolder();if(h){setFolderName(h.name);toast(`📁 Folder set: ${h.name}`,'success')}}}>
-          {folderName?`📂 ${folderName}`:'📁 Set Download Folder'}
-        </button>
+        {view==='home'     &&<HomePage onPlay={onPlay} recentlyPlayed={recentlyPlayed}/>}
+        {view==='library'  &&<LibraryPage currentTrack={currentTrack} onPlay={(t,i,ts)=>onPlay(t,ts,i)} onCtx={showCtx} toast={toast} offlineKeys={offlineKeys}/>}
+        {view==='search'   &&<SearchPage currentTrack={currentTrack} onPlay={onPlay} onCtx={showCtx}/>}
+        {view==='playlist' &&selectedPl&&<PlaylistPage playlist={playlists.find(p=>p.id===selectedPl)} onPlay={(t,ts,i)=>onPlay(t,ts,i)} onCtx={showCtx} onBack={()=>setView('home')} offlineKeys={offlineKeys}/>}
+        {view==='queue'    &&<QueuePage queue={queue} queueIdx={queueIdx}
+          onPlayIdx={i=>{setQueueIdx(i);startTrack(queue[i],queue,i)}}
+          onRemove={i=>{const q=[...queue];q.splice(i,1);setQueue(q);if(queueIdx>=i&&queueIdx>0)setQueueIdx(x=>x-1)}}
+          onClear={()=>{setQueue([]);setQueueIdx(-1);audioRef.current.pause();setCurrentTrack(null);setIsPlaying(false)}}/>}
+        {view==='lyrics'   &&<LyricsPage currentTrack={currentTrack} position={position}/>}
+        {view==='downloads'&&<DownloadsPage onPlay={onPlay} currentTrack={currentTrack}/>}
       </div>
-      {view==='home'     &&<HomePage onPlay={onPlay}/>}
-      {view==='library'  &&<LibraryPage currentTrack={currentTrack} onPlay={(t,i,ts)=>onPlay(t,ts,i)} onCtx={showCtx} toast={toast} offlineKeys={offlineKeys}/>}
-      {view==='search'   &&<SearchPage currentTrack={currentTrack} onPlay={onPlay} onCtx={showCtx}/>}
-      {view==='playlist' &&selectedPl&&<PlaylistPage playlist={playlists.find(p=>p.id===selectedPl)} onPlay={(t,ts,i)=>onPlay(t,ts,i)} onCtx={showCtx} onBack={()=>setView('home')} offlineKeys={offlineKeys}/>}
-      {view==='queue'    &&<QueuePage queue={queue} queueIdx={queueIdx}
-        onPlayIdx={i=>{setQueueIdx(i);startTrack(queue[i],queue,i)}}
-        onRemove={i=>{const q=[...queue];q.splice(i,1);setQueue(q);if(queueIdx>=i&&queueIdx>0)setQueueIdx(x=>x-1)}}
-        onClear={()=>{setQueue([]);setQueueIdx(-1);audioRef.current.pause();setCurrentTrack(null);setIsPlaying(false)}}/>}
-      {view==='lyrics'   &&<LyricsPage currentTrack={currentTrack} position={position}/>}
-      {view==='downloads'&&<DownloadsPage onPlay={onPlay} currentTrack={currentTrack}/>}
     </div>
-    <div className="player-wrap">
-      <PlayerBar track={currentTrack} isPlaying={isPlaying} position={position} duration={duration}
-        volume={volume} shuffle={shuffle} repeat={repeat}
+    <div className="app-player">
+      <PlayerBar track={currentTrack} isPlaying={isPlaying} pos={position} dur={duration}
+        vol={volume} shuffle={shuffle} repeat={repeat} sleepMins={sleepMins}
         onToggle={togglePlay} onPrev={playPrev} onNext={playNext}
-        onSeek={seek} onVolume={setVol} onShuffle={()=>setShuffle(s=>!s)} onRepeat={()=>setRepeat(r=>!r)}
-        loading={loading} onQueueClick={()=>nav('queue')} onLyricsClick={()=>nav('lyrics')}/>
+        onSeek={seek} onVol={setVol} onShuffle={()=>setShuffle(s=>!s)} onRepeat={()=>setRepeat(r=>!r)}
+        loading={loading} onQueue={()=>nav('queue')} onLyrics={()=>nav('lyrics')}
+        onSleep={()=>setShowSleepModal(true)} onExpand={()=>isMobile&&setExpanded(true)}/>
     </div>
-    <MobilePlayer track={currentTrack} isPlaying={isPlaying} position={position} duration={duration}
-      onToggle={togglePlay} onPrev={playPrev} onNext={playNext} onSeek={seek} loading={loading}/>
+
+    {/* Mobile player + expanded */}
+    <MobilePlayer track={currentTrack} isPlaying={isPlaying} pos={position} dur={duration}
+      onToggle={togglePlay} onPrev={playPrev} onNext={playNext} onSeek={seek} loading={loading}
+      onExpand={()=>setExpanded(true)}/>
     <BottomNav view={view} onNav={nav}/>
-    <Toasts toasts={toasts}/>
+
+    <ExpandedPlayer track={currentTrack} isPlaying={isPlaying} pos={position} dur={duration}
+      vol={volume} shuffle={shuffle} repeat={repeat} loading={loading} sleepMins={sleepMins}
+      onClose={()=>setExpanded(false)} onToggle={togglePlay} onPrev={playPrev} onNext={playNext}
+      onSeek={seek} onVol={setVol} onShuffle={()=>setShuffle(s=>!s)} onRepeat={()=>setRepeat(r=>!r)}
+      onSleep={()=>setShowSleepModal(true)} onDownload={()=>currentTrack&&handleDownload(currentTrack)}
+      onShare={()=>currentTrack&&shareTrack(currentTrack)} onLyrics={()=>{setExpanded(false);nav('lyrics')}}
+      isDownloaded={isTrackDownloaded}/>
+    {/* Hide expanded on desktop */}
+    {!isMobile&&expanded&&setExpanded(false)&&null}
+
+    <Toasts items={toasts}/>
     {ctxMenu&&<CtxMenu x={ctxMenu.x} y={ctxMenu.y} items={ctxMenu.items} onClose={()=>setCtxMenu(null)}/>}
-    {modal?.type==='create'&&<Modal title="Create playlist" desc="Give your playlist a name" placeholder="My Playlist" onOk={createPlaylist} onClose={()=>setModal(null)}/>}
+    {modal?.type==='create'&&<Modal title="Create Playlist" desc="Name your playlist" placeholder="My Playlist" onOk={createPlaylist} onClose={()=>setModal(null)}/>}
     {plPicker&&<PlPicker playlists={playlists} onPick={addToPlaylist} onClose={()=>setPlPicker(null)}/>}
-    {showFolderModal&&<FolderPermModal onGrant={onGrantFolder} onSkip={onSkipFolder}/>}
-    {downloading&&<div className="dl-bar"><div className="spinner"/>Downloading "{downloading.title}"… {Math.round(downloading.pct*100)}%</div>}
+    {showFolderModal&&<FolderModal onGrant={onGrantFolder} onSkip={onSkipFolder}/>}
+    {showSleepModal&&<SleepModal currentMins={sleepMins} onSet={setSleepTimer} onClose={()=>setShowSleepModal(false)}/>}
+    {downloading&&<>
+      <div className="dl-progress"><div className="spinner"/>Downloading "{downloading}"… {Math.round(dlPct*100)}%</div>
+      <div className="dl-progress-bar" style={{bottom:'calc(var(--player-h) + 58px)'}}><div className="dl-progress-fill" style={{width:`${dlPct*100}%`}}/></div>
+    </>}
   </div>;
 }
 
